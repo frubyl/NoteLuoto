@@ -1,6 +1,0 @@
-[submodule "backend/third_party/cpp-jwt"]
-	path = third_party/cpp-jwt
-	url = https://github.com/arun11299/cpp-jwt
-[submodule "backend/third_party/bcrypt"]
-	path = third_party/bcrypt
-	url = https://github.com/hilch/Bcrypt.cpp
