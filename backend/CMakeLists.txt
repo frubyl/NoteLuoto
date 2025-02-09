@@ -12,6 +12,7 @@ add_subdirectory(third_party/bcrypt)
 
 option(JWT_BUILD_EXAMPLES OFF)
 
+
 # Adding userver dependency
 find_package(userver COMPONENTS core grpc postgresql QUIET)
 if(NOT userver_FOUND)  # Fallback to subdirectory usage
