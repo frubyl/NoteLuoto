@@ -1,0 +1,1159 @@
+openapi: 3.0.0
+info:
+  title: NoteLuoto OpenAPI спецификация
+  version: 1.0.5
+servers:
+  - url: http://localhost:8080
+    description: dev server
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      description: >-
+        Пользователь вводит имя пользователя и пароль, чтобы создать новую
+        учетную запись.
+      operationId: registerUser
+      tags:
+        - Auth
+      requestBody:
+        description: Данные нового пользователя для регистрации
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{3,30}$
+                  description: >-
+                    Имя пользователя должно содержать от 3 до 30 символов, может
+                    включать буквы, цифры, подчеркивания и тире.
+                  example: user123
+                password:
+                  type: string
+                  pattern: ^(?=.*\d)(?=.*[a-z]).{8,32}$$
+                  description: >-
+                    Пароль должен содержать от 8 до 32 символов, включать
+                    минимум одну строчную букву и одну цифру.
+                  example: password123
+      responses:
+        '201':
+          description: Успешная регистрация нового пользователя
+        '400':
+          description: Некорректные данные для регистрации
+        '409':
+          description: Пользователь с таким именем уже существует
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя и получение JWT токена
+      description: Пользователь вводит имя пользователя и пароль, и получает JWT токен.
+      operationId: loginUser
+      tags:
+        - Auth
+      requestBody:
+        description: Данные пользователя для аутентификации
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{3,30}$
+                  description: >-
+                    Имя пользователя должно содержать от 3 до 30 символов, может
+                    включать буквы, цифры, подчеркивания и тире.
+                  example: user123
+                password:
+                  type: string
+                  pattern: ^(?=.*\d)(?=.*[a-z]).{8,32}$$
+                  description: >-
+                    Пароль должен содержать от 8 до 32 символов, включать
+                    минимум одну строчную букву и одну цифру.
+                  example: password123
+      responses:
+        '200':
+          description: >-
+            Успешная аутентификация, возвращен JWT токен, который действует
+            несколько дней
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: your_jwt_token_here
+        '401':
+          description: Неверные данные для аутентификации
+        '404':
+          description: Такого пользователя не существует
+  /notes:
+    post:
+      summary: Создание новой заметки
+      description: Создает новую заметку с тегами, чеклистами
+      operationId: createNote
+      tags:
+        - Notes
+      security:
+        - JWT: []
+      requestBody:
+        description: Данные для новой заметки
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreateRequest'
+      responses:
+        '201':
+          description: Заметка успешно создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  note_id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          description: Имя поля, где произошла ошибка
+                        message:
+                          type: string
+                          description: Сообщение ошибки дял поля
+                example:
+                  errors:
+                    - field: body
+                      message: Must not be empty
+                    - field: title
+                      message: Max length (400) exceeded
+                    - field: tags
+                      message: Max length (32) exceeded
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+    get:
+      security:
+        - JWT: []
+      summary: >-
+        Получение заметок с фильтрацией по тегам, поиском по ключевым словам или
+        семантическим поиском и пагинацией
+      description: >-
+        Получение заметок с возможностью фильтрации по тегам, точного поиска по
+        заголовку и описанию, а также пагинации (по 20 заметок на страницу).
+      operationId: getNotesWithSearchAndPagination
+      tags:
+        - Notes
+      parameters:
+        - in: query
+          name: query
+          required: false
+          schema:
+            type: string
+            minLength: 0
+            maxLength: 500
+            example: работа
+          description: Ключевые слова для поиска.
+        - in: query
+          name: tags
+          required: false
+          schema:
+            type: array
+            minItems: 0
+            maxItems: 32
+            items:
+              type: string
+              minLength: 1
+              maxLength: 50
+            example:
+              - work
+              - urgent
+        - in: query
+          name: searchType
+          required: false
+          schema:
+            type: string
+            enum:
+              - semantic
+              - exact
+              - ai
+            example: semantic
+          description: Тип поиска - семантический или точный.
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+          description: Номер страницы для пагинации (по умолчанию 1).
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 20
+            example: 20
+          description: Количество заметок на странице (по умолчанию 20).
+      responses:
+        '200':
+          description: Список заметок с фильтрацией, поиском и пагинацией
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notes'
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          description: Имя поля, где произошла ошибка
+                        message:
+                          type: string
+                          description: Сообщение об ошибке
+                example:
+                  errors:
+                    - field: limit
+                      message: Value must be from 5 to 20
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+  /notes/{note_id}:
+    get:
+      summary: Получение заметки по ID
+      description: Возвращает информацию о заметке, включая вложения, чеклисты и теги.
+      operationId: getNote
+      tags:
+        - Notes
+      security:
+        - JWT: []
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Заметка успешно найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotePatchRequest'
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка не найдена
+    patch:
+      summary: Обновление заметки
+      description: Обновляет информацию о заметке, включая чеклисты и вложения.
+      operationId: updateNote
+      tags:
+        - Notes
+      security:
+        - JWT: []
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      requestBody:
+        description: Новые данные для заметки
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotePatchRequest'
+      responses:
+        '200':
+          description: Заметка успешно обновлена
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          description: Имя поля, где произошла ошибка
+                        message:
+                          type: string
+                          description: Сообщение ошибки дял поля
+                example:
+                  errors:
+                    - field: body
+                      message: Must not be empty
+                    - field: title
+                      message: Max length (400) exceeded
+                    - field: tags
+                      message: Max length (32) exceeded
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+    delete:
+      summary: Удаление заметки
+      description: Удаляет заметку по ее ID.
+      operationId: deleteNote
+      tags:
+        - Notes
+      security:
+        - JWT: []
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Заметка успешно удалена
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка не найдена
+          
+  /checklist/{note_id}:
+    post:
+      security:
+        - JWT: [] 
+      summary: "Добавить чеклист к заметке"
+      operationId: addChecklistToNote
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          description: "ID заметки, к которой нужно добавить чеклист"
+          schema:
+            type: integer
+            example: 12
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Заголовок чеклиста"
+                  minLength: 1
+                  maxLength: 256
+
+      responses:
+        '200':
+          description: "Чеклист успешно создан"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checklist_id:
+                    type: integer
+                    description: "Айди созданого чеклиста"
+                    example: 2
+                    minimum: 1
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Заметка с указанным ID не найдена"   
+          
+  /checklist/{checklist_id}/item:
+    post:
+      security:
+        - JWT: [] 
+      summary: "Добавить пункт в чеклист"
+      operationId: addChecklistItem
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: checklist_id
+          required: true
+          description: "ID чеклиста, к которому нужно добавить пункт"
+          schema:
+            type: integer
+            example: 12
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: "Текст пункта чеклиста"
+                  minLength: 1
+                  maxLength: 512
+      responses:
+        '200':
+          description: "Пункт успешно добавлен в чеклист"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item_id:
+                    type: integer
+                    description: "ID созданного пункта"
+                    example: 5
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Чеклист с указанным ID не найден"
+          
+  /checklist/item/{item_id}/status:
+    put:
+      security:
+        - JWT: [] 
+      summary: "Изменить статус выполненности пункта чеклиста на противоположный"
+      operationId: updateChecklistItemStatus
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: item_id
+          required: true
+          description: "ID пункта чеклиста, статус которого нужно изменить"
+          schema:
+            type: integer
+            example: 5
+      responses:
+        '200':
+          description: "Статус выполненности пункта успешно изменён"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Пункт чеклиста с указанным ID не найден"
+          
+  /checklist/item/{item_id}:
+    delete:
+      security:
+        - JWT: []
+      summary: "Удалить пункт из чеклиста"
+      operationId: deleteChecklistItem
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: item_id
+          required: true
+          description: "ID пункта чеклиста, который нужно удалить"
+          schema:
+            type: integer
+            example: 5
+      responses:
+        '200':
+          description: "Пункт успешно удалён из чеклиста"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Пункт чеклиста с указанным ID не найден"
+          
+  /checklist/{checklist_id}:
+    get:
+      security:
+        - JWT: []  # Для авторизации через JWT
+      summary: "Получить чеклист по ID"
+      operationId: getChecklistById
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: checklist_id
+          required: true
+          description: "ID чеклиста, который нужно получить"
+          schema:
+            type: integer
+            example: 12
+      responses:
+        '200':
+          description: "Чеклист успешно найден"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checklist_id:
+                    type: integer
+                    description: "ID чеклиста"
+                    example: 12
+                  title:
+                    type: string
+                    description: "Заголовок чеклиста"
+                    example: "Shopping List"
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Дата создания чеклиста"
+                    example: "2025-03-10T09:30:00+00:00"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: "Дата последнего обновления чеклиста"
+                    example: "2025-03-10T10:30:00+00:00"
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        item_id:
+                          type: integer
+                          description: "ID пункта чеклиста"
+                          example: 1
+                        text:
+                          type: string
+                          description: "Текст пункта"
+                          example: "Buy apples"
+                        completed:
+                          type: boolean
+                          description: "Статус выполнения"
+                          example: false
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: "Дата создания пункта"
+                          example: "2025-03-10T09:30:00+00:00"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          description: "Дата последнего обновления пункта"
+                          example: "2025-03-10T10:30:00+00:00"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Чеклист с указанным ID не найден"
+    delete:
+      security:
+        - JWT: [] 
+      summary: "Удалить чеклист"
+      operationId: deleteChecklist
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: checklist_id
+          required: true
+          description: "ID чеклиста, который нужно удалить"
+          schema:
+            type: integer
+            example: 12
+      responses:
+        '200':
+          description: "Чеклист успешно удалён"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Чеклист с указанным ID не найден"
+      
+  /attachment/{note_id}:
+    post:
+      security:
+        - JWT: [] 
+      summary: "Добавить вложение к заметке"
+      description: "Загружает файл и добавляет его в указанную заметку. Ответ содержит URL для доступа к файлу."
+      operationId: addAttachmentToNote
+      tags:
+        - Attachment
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          description: "ID заметки, к которой нужно добавить вложение"
+          schema:
+            type: integer
+            example: 12
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "Файл, который нужно прикрепить к заметке"
+                  maxLength: 524288000  # 500 MB
+
+      responses:
+        '200':
+          description: "Файл успешно загружен и добавлен к заметке"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment_id:
+                    type: integer
+                    description: "Айди файла"
+                    example: 2
+                    minimum: 1
+        '400':
+          description: "Файл отсутствует"
+        '413':
+          description: "Файл слишком большой"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Заметка с указанным ID не найдена"
+
+  /attachment/{attachment_id}:
+    get:
+      security:
+        - JWT: [] 
+      summary: "Получить вложение из заметки"
+      operationId: getAttachmentFromNote
+      tags:
+        - Attachment
+      parameters:
+        - in: path
+          name: attachment_id
+          required: true
+          schema:
+            type: integer
+            example: 12
+            
+      responses:
+        '200':
+          description: "Файл успешно отправлен"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file:
+                    type: string
+                    format: binary
+                    description: "Файл, который нужно прикрепить к заметке"
+                    maxLength: 524288000  # 500 MB
+
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Вложение не найдено"      
+    delete:
+      security:
+        - JWT: [] 
+      summary: "Удалить вложение из заметки"
+      operationId: deleteAttachmentFromNote
+      tags:
+        - Attachment
+      parameters:
+        - in: path
+          name: attachment_id
+          required: true
+          schema:
+            type: integer
+            example: 12
+            
+      responses:
+        '200':
+          description: "Файл успешно удален"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Вложение не найдено"      
+          
+  /tags/create:
+    post:
+      summary: Создание нового тега
+      description: Создает новый тег для использования в заметках.
+      operationId: createTag
+      tags:
+        - Tags
+      security:
+        - JWT: []
+      requestBody:
+        description: Название нового тега
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example: work
+      responses:
+        '201':
+          description: Тег успешно создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tag_id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '409':
+          description: Такой тег уже существует
+  /tags/all:
+    get:
+      summary: Получение всех тегов от самых часто используемых к менее используемым
+      description: Возвращает все доступные теги для фильтрации заметок.
+      operationId: getAllTags
+      tags:
+        - Tags
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Список всех тегов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tag_id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      example: "work"
+                
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+          
+  /tags/{note_id}:
+    get:
+      summary: Получение тегов заметки
+      description: Возвращает список всех тегов, связанных с указанной заметкой.
+      operationId: getTagsForNote
+      tags:
+        - Tags
+      security:
+        - JWT: []
+      parameters:
+        - name: note_id
+          in: path
+          description: ID заметки, для которой требуется получить теги
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Список тегов, связанных с заметкой
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tag_id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      example: "work"
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка с указанным ID не найдена
+
+  /tags/{note_id}/{tag_id}:
+    post:
+      summary: Добавление тега к заметке
+      description: Привязывает тег к указанной заметке по её ID.
+      operationId: addTagToNote
+      tags:
+        - Tags
+      security:
+        - JWT: []
+      parameters:
+        - name: note_id
+          in: path
+          description: ID заметки, к которой нужно добавить тег
+          required: true
+          schema:
+            type: integer
+        - name: tag_id
+          in: path
+          description: ID тега, который нужно добавить
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Тег успешно добавлен к заметке
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка с указанным ID не найдена или тег не существует.
+        '409':
+          description: Такой тег уже добавлен к заметке
+    delete:
+      summary: Удаления тега из заметки
+      description: Удаление тега из заметки по ID
+      operationId: deleteTagToNote
+      tags:
+        - Tags
+      security:
+        - JWT: []
+      parameters:
+        - name: note_id
+          in: path
+          description: ID заметки, у которой нужно удалить тег
+          required: true
+          schema:
+            type: integer
+        - name: tag_id
+          in: path
+          description: ID тега, который нужно удалить
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Тег успешно удален
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка с указанным ID не найдена или тег не существует.
+  /ai/answer:
+    post:
+      summary: Получение ответа от искусственного интеллекта
+      description: Отправка запроса для получения ответа от ИИ.
+      operationId: getAIAnswer
+      tags:
+        - AI
+      security:
+        - JWT: []
+      requestBody:
+        description: Запрос пользователя
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  minLength: 1
+                  maxLength: 4096
+                  type: string
+                  example: Как мне улучшить свою продуктивность?
+      responses:
+        '200':
+          description: Ответ от ИИ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query_id:
+                    minimum: 1
+                    type: integer
+                  answer:
+                    minLength: 1
+                    maxLength: 4096
+                    type: string
+                    example: >-
+                      Рекомендуется использовать технику Pomodoro для улучшения
+                      концентрации.
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+  /history:
+    get:
+      summary: Получение истории запросов и ответов ИИ
+      description: >-
+        Возвращает историю всех запросов, сделанных пользователем, и
+        соответствующих ответов ИИ. Поддерживает пагинацию.
+      operationId: getAIHistory
+      tags:
+        - History
+      security:
+        - JWT: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+          description: Номер страницы для пагинации (по умолчанию 1).
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 20
+            example: 20
+          description: Количество записей на странице (по умолчанию 20).
+      responses:
+        '200':
+          description: История запросов и ответов ИИ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: object
+                      properties:
+                        query_id:
+                          minimum: 1
+                          type: integer
+                        query:
+                          minLength: 1
+                          maxLength: 4096
+                          type: string
+                          example: Как мне улучшить свою продуктивность?
+                          description: Запрос пользователя к ИИ.
+                        response:
+                          minLength: 1
+                          maxLength: 4096
+                          type: string
+                          example: >-
+                            Рекомендуется использовать технику Pomodoro для
+                            улучшения концентрации.
+                          description: Ответ ИИ на запрос.
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: '2025-01-02T12:34:56Z'
+                          description: Дата и время запроса.
+        '400':
+          description: Неверный запрос.
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+  /suggest/queries:
+    get:
+      summary: Получение предложений по поисковым запросам
+      description: Отправка запроса для получения рекомендаций по возможным запросам.
+      operationId: suggestQueries
+      tags:
+        - Recommendations
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Рекомендации по запросам
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                maxItems: 10
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 4096
+                  example:
+                    - Как улучшить управление временем?
+                    - Советы по планированию задач
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+  /ai/generate_tags/{note_id}:
+    post:
+      summary: Генерация тегов на основе данных замтеки
+      description: Автоматическая генерация тегов на основе текста заметки.
+      operationId: generateTags
+      tags:
+        - AI
+      security:
+        - JWT: []
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Список сгенерированных тегов
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                maxItems: 5
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example:
+                    - продуктивность
+                    - рабочее место
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка не найдена
+  /suggest/tags/{note_id}:
+    post:
+      summary: Рекомендации по тегам
+      description: Получение рекомендаций по тегам на основе данных пользователя.
+      operationId: suggestTags
+      tags:
+        - Recommendations
+      security:
+        - JWT: []
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Рекомендованные теги
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                maxItems: 5
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example:
+                    - time_management
+                    - focus
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка не найдена
+components:
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Хранит user_id
+  schemas:
+    NoteCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 512
+          example: Заголовок заметки
+        body:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          example: Описание заметки в формате Markdown
+
+    NotePatchRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 512
+          example: Заголовок заметки
+        body:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          example: Описание заметки в формате Markdown
+
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-02T12:34:56'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2025-01-02T12:34:56'                  
+    NoteResponse:
+      type: object
+      properties:
+        note_id:
+          type: integer
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 512
+          example: Заголовок заметки
+        body:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          example: Описание заметки в формате Markdown
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-02T12:34:56'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2025-01-02T12:34:56'
+
+    Notes:
+      type: array
+      minItems: 0
+      maxItems: 100
+      items:
+        $ref: '#/components/schemas/NoteResponse'
