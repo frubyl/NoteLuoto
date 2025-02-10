@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: NoteLuoto OpenAPI спецификация
-  version: 1.0.5
+  version: 1.0.6
 servers:
   - url: http://localhost:8080
     description: dev server
@@ -438,12 +438,12 @@ paths:
         '404':
           description: "Чеклист с указанным ID не найден"
           
-  /checklist/item/{item_id}/status:
-    put:
+  /checklist/item/{item_id}:
+    patch:
       security:
         - JWT: [] 
-      summary: "Изменить статус выполненности пункта чеклиста на противоположный"
-      operationId: updateChecklistItemStatus
+      summary: "Изменить статус выполненности пункта чеклиста или его имя"
+      operationId: updateChecklistItem
       tags:
         - Checklist
       parameters:
@@ -454,6 +454,22 @@ paths:
           schema:
             type: integer
             example: 5
+      requestBody:
+        description: Название нового тега
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example: Buy something 
+                status:
+                  type: boolean
+                  
       responses:
         '200':
           description: "Статус выполненности пункта успешно изменён"
@@ -462,7 +478,6 @@ paths:
         '404':
           description: "Пункт чеклиста с указанным ID не найден"
           
-  /checklist/item/{item_id}:
     delete:
       security:
         - JWT: []
@@ -487,6 +502,44 @@ paths:
           description: "Пункт чеклиста с указанным ID не найден"
           
   /checklist/{checklist_id}:
+    patch: 
+      security:
+        - JWT: []  # Для авторизации через JWT
+      summary: "Обновить заголовок чеклиста"
+      operationId: getChecklistById
+      tags:
+        - Checklist
+      parameters:
+        - in: path
+          name: checklist_id
+          required: true
+          description: "ID чеклиста, который нужно получить"
+          schema:
+            type: integer
+            example: 12
+      requestBody:
+        description: Название нового тега
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example: Buy something 
+   
+                  
+      responses:
+        '200':
+          description: "Статус выполненности пункта успешно изменён"
+        '401':
+          description: "Неавторизованный запрос, требуется JWT токен"
+        '404':
+          description: "Пункт чеклиста с указанным ID не найден"
+            
     get:
       security:
         - JWT: []  # Для авторизации через JWT
