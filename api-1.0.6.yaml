@@ -563,10 +563,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  checklist_id:
-                    type: integer
-                    description: "ID чеклиста"
-                    example: 12
+       
                   title:
                     type: string
                     description: "Заголовок чеклиста"
