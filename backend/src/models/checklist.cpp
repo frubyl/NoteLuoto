@@ -9,6 +9,7 @@ userver::formats::json::Value Serialize(
 
   builder["item_id"] = item.item_id_;
   builder["text"] = item.text_;
+  builder["completed"] = item.completed_;
   builder["created_at"] = item.created_at_;
   builder["updated_at"] = item.updated_at_;
   return builder.ExtractValue();

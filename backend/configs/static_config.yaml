@@ -202,9 +202,9 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
-        handler-put-checklist:
+        handler-patch-checklist:
             path: /checklist/{checklist_id}
-            method: PUT
+            method: PATCH
             auth:
                 types:
                 - bearer
@@ -224,9 +224,9 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
-        handler-put-checklist-item:
+        handler-patch-checklist-item:
             path: /checklist/item/{item_id}
-            method: PUT
+            method: PATCH
             auth:
                 types:
                 - bearer

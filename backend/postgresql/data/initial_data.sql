@@ -18,8 +18,16 @@ VALUES (1, 'tag1'),
 INSERT INTO noteluoto.note_tags (note_id, tag_id)
 VALUES (1, 2);
 
-INSERT INTO noteluoto.checklists (note_id, title)
-VALUES (1, 'title');
+INSERT INTO noteluoto.checklists (note_id, title, created_at, updated_at)
+VALUES (1, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
-INSERT INTO noteluoto.checklist_items (checklist_id, text)
-VALUES (1, 'item1');
+INSERT INTO noteluoto.checklist_items (checklist_id, text, created_at, updated_at)
+VALUES (1, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
+
+
+
+INSERT INTO noteluoto.checklists (note_id, id, title, created_at, updated_at)
+VALUES (1, 99, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
+
+INSERT INTO noteluoto.checklist_items (id, checklist_id, text, created_at, updated_at)
+VALUES (99, 99, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');

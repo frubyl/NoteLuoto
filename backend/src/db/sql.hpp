@@ -111,7 +111,7 @@ namespace nl::db::sql {
     
     // Поиск чеклиста 
     inline constexpr std::string_view kGetChecklist{
-    R"~(SELECT (title, created_at, updated_at)
+    R"~(SELECT title, created_at, updated_at
         FROM noteluoto.checklists 
         WHERE id = $1;)~"};
 

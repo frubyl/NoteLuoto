@@ -29,10 +29,10 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 };
 } // namespace post 
 
-namespace put {
+namespace patch {
 class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
  public:
-  static constexpr std::string_view kName{"handler-put-checklist-item"};
+  static constexpr std::string_view kName{"handler-patch-checklist-item"};
 
   Handler(const userver::components::ComponentConfig& config,
           const userver::components::ComponentContext& context);
@@ -45,7 +45,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
 };
-} // namespace put 
+} // namespace patch 
 
 namespace del {
 class Handler final : public userver::server::handlers::HttpHandlerJsonBase {

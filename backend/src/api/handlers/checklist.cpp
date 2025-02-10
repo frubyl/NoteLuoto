@@ -24,7 +24,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         auto checklist = dto::ParseChecklistRequest(request);
         const auto result_find =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                                db::sql::kGetChecklist.data(), checklist.note_id_);
+                                db::sql::kGetNote.data(), checklist.note_id_);
 
         if (result_find.IsEmpty()) {
             request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);  
@@ -41,7 +41,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         int32_t checklist_id = *(result_set.begin());
         response_body["checklist_id"] = checklist_id;  
         request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);  
-        return response_body.ExtractValue();
+       return response_body.ExtractValue();
 }    
 } // namespace note::post 
 
@@ -75,17 +75,16 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
                                 db::sql::kGetAllChecklistItems.data(), checklist.checklist_id_);
 
         // Формируем тело ответа 
-        // userver::formats::json::ValueBuilder response_body = result_checklist.AsSingleRow<models::Checklist>(
-        //     userver::storages::postgres::kRowTag);
-        // response_body["items"] = userver::formats::common::Type::kArray;  
+        userver::formats::json::ValueBuilder response_body = result_checklist.AsSingleRow<models::Checklist>(
+            userver::storages::postgres::kRowTag);
+        response_body["items"] = userver::formats::common::Type::kArray;  
 
-        // for (const auto& row : result_items) {
-        //     response_body["items"].PushBack(row.As<models::Item>(
-        //     userver::storages::postgres::kRowTag));
-        // }
+        for (const auto& row : result_items) {
+            response_body["items"].PushBack(row.As<models::Item>(
+            userver::storages::postgres::kRowTag));
+        }
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
-        //return response_body.ExtractValue();
-        return {};
+        return response_body.ExtractValue();
 }    
 } // namespace get
 
@@ -119,7 +118,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     }
 } // namespace del
 
-namespace put {
+namespace patch {
 Handler::Handler(const userver::components::ComponentConfig& config,
                  const userver::components::ComponentContext& context)
     : HttpHandlerJsonBase(config, context),
@@ -148,7 +147,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }
-} // namespace put
+} // namespace patch
 } // namespace nl::handlers::api::checklist
 
  

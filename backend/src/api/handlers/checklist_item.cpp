@@ -43,7 +43,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
 }    
 } // namespace post
 
-namespace put {
+namespace patch {
 Handler::Handler(const userver::components::ComponentConfig& config,
                  const userver::components::ComponentContext& context)
     : HttpHandlerJsonBase(config, context),
@@ -81,7 +81,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
-} // namespace put
+} // namespace patch
 
 namespace del {
 Handler::Handler(const userver::components::ComponentConfig& config,

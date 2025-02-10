@@ -1,14 +1,6 @@
 import pytest
 from testsuite.databases import pgsql
 
-@pytest.fixture
-def auth_header():
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTczODgzNzEwMiwidXNlcl9pZCI6MX0.SdRRnUsbmQeALGIejJI8Whf0KAqzBHLzTNcNw2LH9z0"
-    headers = {
-        "Authorization": f"Token {token}"
-    }
-    return headers
-
 
 # Тестирование создания заметки
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])

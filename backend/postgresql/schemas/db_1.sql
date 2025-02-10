@@ -96,53 +96,61 @@ FOR EACH ROW
 EXECUTE FUNCTION remove_unused_tag();
 
 
--- Триггер для обновления updated_at в чеклисте при изменении items
+-- Функция для обновления updated_at в таблице checklists
 CREATE OR REPLACE FUNCTION update_checklist_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE noteluoto.checklists
-  SET updated_at = NOW()
-  WHERE id = NEW.checklist_id OR id = OLD.checklist_id;
+  -- Для вставки или обновления, установим updated_at чеклиста как у item
+  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+    UPDATE noteluoto.checklists
+    SET updated_at = NEW.updated_at
+    WHERE id = NEW.checklist_id;
+  END IF;
+
+  -- Для удаления, установим updated_at чеклиста как у item (OLD)
+  IF TG_OP = 'DELETE' THEN
+    UPDATE noteluoto.checklists
+    SET updated_at = OLD.updated_at
+    WHERE id = OLD.checklist_id;
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+-- Триггер для обновления updated_at в чеклисте при изменении записи в checklist_items
 CREATE TRIGGER trigger_update_checklist_timestamp
 AFTER INSERT OR UPDATE OR DELETE ON noteluoto.checklist_items
 FOR EACH ROW
 EXECUTE FUNCTION update_checklist_timestamp();
 
 
--- Если изменяется updated_at в чеклисте, то и в note
+-- Функция для обновления updated_at в таблице notes на значение из checklists
 CREATE OR REPLACE FUNCTION update_note_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Обновляем поле updated_at в таблице notes с таким же значением, что и в checklists
   UPDATE noteluoto.notes
-  SET updated_at = NOW()
+  SET updated_at = NEW.updated_at
   WHERE id = NEW.note_id;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+-- Триггер для обновления updated_at в notes при изменении updated_at в checklists
 CREATE TRIGGER trigger_update_note_timestamp
 AFTER UPDATE ON noteluoto.checklists
 FOR EACH ROW
-WHEN (NEW.updated_at <> OLD.updated_at)
+WHEN (NEW.updated_at <> OLD.updated_at)  -- срабатывает, только если поле updated_at изменилось
 EXECUTE FUNCTION update_note_timestamp();
 
 
-CREATE OR REPLACE FUNCTION noteluoto.delete_checklist_items()
-RETURNS TRIGGER AS $$
-BEGIN
-  DELETE FROM noteluoto.checklist_items WHERE checklist_id = OLD.id;
-  RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_delete_checklist_items
-BEFORE DELETE ON noteluoto.checklists
-FOR EACH ROW
-EXECUTE FUNCTION noteluoto.delete_checklist_items();
+-- Изменение внешнего ключа, чтобы использовать каскадное удаление
+ALTER TABLE noteluoto.checklist_items
+DROP CONSTRAINT fk_checklist_items_checklist,
+ADD CONSTRAINT fk_checklist_items_checklist
+FOREIGN KEY (checklist_id) REFERENCES noteluoto.checklists(id)
+ON DELETE CASCADE;
 
 
 -- Индексирование

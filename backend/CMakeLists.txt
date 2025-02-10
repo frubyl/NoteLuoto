@@ -80,14 +80,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/api/handlers/notes_id.hpp
     src/api/handlers/notes_id.cpp
 
-    src/api/handlers/tags_create.hpp
-    src/api/handlers/tags_create.cpp
-    src/api/handlers/tags_all.hpp
-    src/api/handlers/tags_all.cpp
-    src/api/handlers/tags_note.hpp
-    src/api/handlers/tags_note.cpp
-    src/api/handlers/tags_note_tag.hpp
-    src/api/handlers/tags_note_tag.cpp
+    src/api/handlers/tag.hpp
+    src/api/handlers/tag.cpp
 
     src/api/handlers/checklist.hpp
     src/api/handlers/checklist.cpp

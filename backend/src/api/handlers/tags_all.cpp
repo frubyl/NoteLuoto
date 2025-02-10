@@ -34,6 +34,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         return response_body.ExtractValue();
 }    
 
+
 } // namespace nl::handlers::api::tags::all::get
 
 

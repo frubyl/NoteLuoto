@@ -1,15 +1,6 @@
 import pytest
 from testsuite.databases import pgsql
 
-@pytest.fixture
-def auth_header():
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTczODgzNzEwMiwidXNlcl9pZCI6MX0.SdRRnUsbmQeALGIejJI8Whf0KAqzBHLzTNcNw2LH9z0"
-    headers = {
-        "Authorization": f"Token {token}"
-    }
-    return headers
-
-
 # Нет заметки с таким айди
 async def test_get_one_note_1(service_client, auth_header):
     response = await service_client.get("/notes/999",
