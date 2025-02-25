@@ -706,7 +706,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  file:
+                  file_name:
+                    type: string
+                  content:
                     type: string
                     format: binary
                     description: "Файл, который нужно прикрепить к заметке"
