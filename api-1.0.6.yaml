@@ -675,10 +675,8 @@ paths:
                     description: "Айди файла"
                     example: 2
                     minimum: 1
-        '400':
-          description: "Файл отсутствует"
-        '413':
-          description: "Файл слишком большой"
+        '500':
+          description: "Не удалось сохранить файл"
         '401':
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
