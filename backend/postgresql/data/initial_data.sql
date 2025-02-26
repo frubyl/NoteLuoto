@@ -31,3 +31,8 @@ VALUES (1, 99, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
 INSERT INTO noteluoto.checklist_items (id, checklist_id, text, created_at, updated_at)
 VALUES (99, 99, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
+
+INSERT INTO noteluoto.attachments (id, note_id, old_file_name, file_name)
+VALUES  (22, 1, 'empty.txt', 'empty.txt'),  
+        (20, 1, 'del.txt', 'del.txt'),  
+        (23, 1, 'test.txt', 'test.txt');

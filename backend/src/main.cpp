@@ -27,6 +27,8 @@
 #include "api/handlers/checklist.hpp"
 #include "api/handlers/checklist_item.hpp"
 
+#include "api/handlers/attachment.hpp"
+
 
 int main(int argc, char* argv[]) {
   using namespace nl;
@@ -42,6 +44,11 @@ int main(int argc, char* argv[]) {
           .Append<userver::clients::dns::Component>()
           .Append<userver::components::HttpClient>()
           .Append<userver::components::DefaultSecdistProvider>()
+
+          // Добавляем эндпоинты для работы с вложениями
+          .Append<handlers::api::attachment::post::Handler>()
+          .Append<handlers::api::attachment::get::Handler>()
+          .Append<handlers::api::attachment::del::Handler>()
 
           // Добавляем эндпоинты для работы с пунктами чеклистов
           .Append<handlers::api::checklist::item::post::Handler>()

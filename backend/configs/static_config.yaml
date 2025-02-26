@@ -81,6 +81,7 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+        # Эндпоинты для работы с заметками
         handler-post-notes:
             path: /notes
             method: POST
@@ -114,6 +115,7 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+        # Эндпоинты для работы с тегами
         handler-post-tags-create:
             path: /tags/create
             method: POST
@@ -169,6 +171,7 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+        # Эндпоинты для работы с чеклистами
         handler-post-checklist-note:
             path: /checklist/{note_id}
             method: POST
@@ -213,6 +216,8 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+
+        # Эндпоинты для работы с пунктами чеклистов
         handler-post-checklist-item:
             path: /checklist/{checklist_id}/item
             method: POST
@@ -245,6 +250,42 @@ components_manager:
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
+
+        # Эндпоинты для работы с вложениями 
+        handler-post-attachment-note:
+            path: /attachment/{note_id}
+            method: POST
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
+        handler-get-attachment:
+            path: /attachment/{attachment_id}
+            method: GET
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
+        handler-delete-attachment:
+            path: /attachment/{attachment_id}
+            method: DELETE
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+            
+        # Регистрация базы данных
         postgres-db-1:
             dbconnection: $dbconnection
             dbconnection#env: DB_CONNECTION

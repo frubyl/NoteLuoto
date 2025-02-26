@@ -40,8 +40,8 @@ userver_setup_environment()
 add_library(${PROJECT_NAME}_objs OBJECT
     src/utils/jwt.hpp
     src/utils/jwt.cpp
-    src/utils/make_errors.hpp
-    src/utils/make_errors.cpp
+    src/utils/grpc_client.hpp
+    src/utils/grpc_client.cpp
 
     src/api/auth/auth_bearer.hpp
     src/api/auth/auth_bearer.cpp
@@ -63,7 +63,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/dto/checklist.hpp
     src/dto/item.hpp
     src/dto/item.cpp
-
+    src/dto/attachment.hpp
+    src/dto/attachment.cpp
 
     src/models/query.hpp
     src/models/query.cpp
@@ -74,6 +75,7 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/models/tag.hpp
     src/models/checklist.cpp
     src/models/checklist.hpp
+    src/models/attachment.hpp
 
     src/api/handlers/create_note.hpp
     src/api/handlers/create_note.cpp
@@ -88,12 +90,16 @@ add_library(${PROJECT_NAME}_objs OBJECT
 
     src/api/handlers/checklist_item.hpp
     src/api/handlers/checklist_item.cpp
+
+    src/api/handlers/attachment.hpp
+    src/api/handlers/attachment.cpp
 )
 
 
 
-
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::postgresql userver::grpc)
+
+
 
 # Link jwt librarys 
 target_include_directories(${PROJECT_NAME}_objs PUBLIC cpp-jwt)

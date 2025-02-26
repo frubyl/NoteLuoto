@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS noteluoto.checklist_items (
 
 CREATE TABLE IF NOT EXISTS noteluoto.attachments (
   id SERIAL PRIMARY KEY,
-  file_url VARCHAR(2048) NOT NULL,
+  file_name VARCHAR(2048) NOT NULL,
+  old_file_name VARCHAR(2048) NOT NULL,
   note_id SERIAL NOT NULL,
   CONSTRAINT fk_attachments_note FOREIGN KEY (note_id) REFERENCES noteluoto.notes (id)
 );
@@ -69,6 +70,20 @@ CREATE TABLE IF NOT EXISTS noteluoto.ai_history (
   user_id SERIAL NOT NULL,
   CONSTRAINT fk_ai_history_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
+
+CREATE OR REPLACE FUNCTION update_note_updated_at() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Обновляем поле updated_at в таблице notes для соответствующей заметки
+    UPDATE noteluoto.notes
+    SET updated_at = CURRENT_TIMESTAMP
+    WHERE id = NEW.note_id;
+
+    -- Возвращаем NEW, так как это триггер для INSERT/UPDATE
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- Создание триггерной функции для удаления неиспользуемых тегов
 CREATE OR REPLACE FUNCTION remove_unused_tag()

@@ -170,5 +170,24 @@ namespace nl::db::sql {
             updated_at = NOW()
         WHERE id = $2;
         )~"};
+    
+    // Добавить вложение 
+    inline constexpr std::string_view kAddAttachmentToNode{
+        R"~(INSERT INTO noteluoto.attachments (file_name, old_file_name, note_id)
+            VALUES ($1, $2, $3)
+            RETURNING id;
+        )~"};
 
+    // Получить имя вложения
+    inline constexpr std::string_view kGetAttachmentNames{
+        R"~(SELECT file_name, old_file_name
+            FROM noteluoto.attachments 
+            WHERE id = $1;
+        )~"};
+        
+    // Удалить вложение
+    inline constexpr std::string_view kDeleteAttachment{
+    R"~(DELETE FROM noteluoto.attachments 
+        WHERE id = $1;
+        )~"};
 }
