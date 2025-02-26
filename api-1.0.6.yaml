@@ -90,7 +90,7 @@ paths:
           description: Неверные данные для аутентификации
         '404':
           description: Такого пользователя не существует
-  /notes:
+  /note:
     post:
       summary: Создание новой заметки
       description: Создает новую заметку с тегами, чеклистами
@@ -145,6 +145,7 @@ paths:
                       message: Max length (32) exceeded
         '401':
           description: Недействительный или истёкший JWT-токен.
+  /notes:        
     get:
       security:
         - JWT: []
@@ -189,7 +190,6 @@ paths:
             enum:
               - semantic
               - exact
-              - ai
             example: semantic
           description: Тип поиска - семантический или точный.
         - in: query
@@ -240,7 +240,7 @@ paths:
                       message: Value must be from 5 to 20
         '401':
           description: Недействительный или истёкший JWT-токен.
-  /notes/{note_id}:
+  /note/{note_id}:
     get:
       summary: Получение заметки по ID
       description: Возвращает информацию о заметке, включая вложения, чеклисты и теги.
