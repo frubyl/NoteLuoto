@@ -25,7 +25,6 @@ INSERT INTO noteluoto.checklist_items (checklist_id, text, created_at, updated_a
 VALUES (1, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
 
-
 INSERT INTO noteluoto.checklists (note_id, id, title, created_at, updated_at)
 VALUES (1, 99, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 

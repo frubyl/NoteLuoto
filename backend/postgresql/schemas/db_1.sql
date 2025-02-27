@@ -71,21 +71,9 @@ CREATE TABLE IF NOT EXISTS noteluoto.ai_history (
   CONSTRAINT fk_ai_history_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
 
-CREATE OR REPLACE FUNCTION update_note_updated_at() 
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Обновляем поле updated_at в таблице notes для соответствующей заметки
-    UPDATE noteluoto.notes
-    SET updated_at = CURRENT_TIMESTAMP
-    WHERE id = NEW.note_id;
-
-    -- Возвращаем NEW, так как это триггер для INSERT/UPDATE
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 
--- Создание триггерной функции для удаления неиспользуемых тегов
+-- Триггер для удаления неиспользуемых тегов
 CREATE OR REPLACE FUNCTION remove_unused_tag()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -111,7 +99,8 @@ FOR EACH ROW
 EXECUTE FUNCTION remove_unused_tag();
 
 
--- Функция для обновления updated_at в таблице checklists
+
+-- Триггер для обновления поля updated_at у чеклиста при изменении его пунктов
 CREATE OR REPLACE FUNCTION update_checklist_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -133,18 +122,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Триггер для обновления updated_at в чеклисте при изменении записи в checklist_items
+-- Привязка триггера к таблице checklist_items
 CREATE TRIGGER trigger_update_checklist_timestamp
 AFTER INSERT OR UPDATE OR DELETE ON noteluoto.checklist_items
 FOR EACH ROW
 EXECUTE FUNCTION update_checklist_timestamp();
 
 
--- Функция для обновления updated_at в таблице notes на значение из checklists
+
+-- Триггер для установки поля updated_at у заметки как у чеклиста при его изменении
 CREATE OR REPLACE FUNCTION update_note_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Обновляем поле updated_at в таблице notes с таким же значением, что и в checklists
   UPDATE noteluoto.notes
   SET updated_at = NEW.updated_at
   WHERE id = NEW.note_id;
@@ -152,19 +141,69 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Триггер для обновления updated_at в notes при изменении updated_at в checklists
+-- Привязка триггера к таблице checklists
 CREATE TRIGGER trigger_update_note_timestamp
 AFTER UPDATE ON noteluoto.checklists
 FOR EACH ROW
-WHEN (NEW.updated_at <> OLD.updated_at)  -- срабатывает, только если поле updated_at изменилось
+WHEN (NEW.updated_at <> OLD.updated_at) 
 EXECUTE FUNCTION update_note_timestamp();
 
 
+
+-- Триггер для обновления поля updated_at у заметки при работы с вложениями
+CREATE OR REPLACE FUNCTION update_note_updated_at_on_attachment_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE noteluoto.notes
+  SET updated_at = CURRENT_TIMESTAMP
+  WHERE id = NEW.note_id;  
+  IF TG_OP = 'DELETE' THEN
+    UPDATE noteluoto.notes
+    SET updated_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.note_id;
+  END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Привязка триггера к таблице attachments
+CREATE TRIGGER trigger_update_note_updated_at_on_attachment_insert
+AFTER INSERT OR DELETE ON noteluoto.attachments
+FOR EACH ROW
+EXECUTE FUNCTION update_note_updated_at_on_attachment_change();
+
+
 -- Изменение внешнего ключа, чтобы использовать каскадное удаление
+-- Когда удаляем чеклист, удаляются все его пункты
 ALTER TABLE noteluoto.checklist_items
 DROP CONSTRAINT fk_checklist_items_checklist,
 ADD CONSTRAINT fk_checklist_items_checklist
 FOREIGN KEY (checklist_id) REFERENCES noteluoto.checklists(id)
+ON DELETE CASCADE;
+
+-- Изменение внешнего ключа, чтобы использовать каскадное удаление
+-- Когда удаляется заметка, удаляются все её вложения
+ALTER TABLE noteluoto.attachments
+DROP CONSTRAINT fk_attachments_note,
+ADD CONSTRAINT fk_attachments_note
+FOREIGN KEY (note_id) REFERENCES noteluoto.notes(id)
+ON DELETE CASCADE;
+
+-- Изменение внешнего ключа, чтобы использовать каскадное удаление
+-- Когда удаляется заметка, удаляются все её связи с тегами
+ALTER TABLE noteluoto.note_tags
+DROP CONSTRAINT fk_note_tags_note,
+ADD CONSTRAINT fk_note_tags_note
+FOREIGN KEY (note_id) REFERENCES noteluoto.notes(id)
+ON DELETE CASCADE;
+
+-- Изменение внешнего ключа, чтобы использовать каскадное удаление
+-- Когда удаляется заметка, удаляются все её чеклисты
+ALTER TABLE noteluoto.checklists
+DROP CONSTRAINT fk_checklists_note,
+ADD CONSTRAINT fk_checklists_note
+FOREIGN KEY (note_id) REFERENCES noteluoto.notes(id)
 ON DELETE CASCADE;
 
 

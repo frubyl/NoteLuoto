@@ -10,6 +10,7 @@ async def test_get_attachment_2(service_client, auth_header):
     response = await service_client.get('/attachment/22', headers = auth_header)
     assert response.status == 500
 
+# для проверки надо создать файл test.txt в build_*/attachments/
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_get_attachment_3(service_client, auth_header):
     response = await service_client.get('/attachment/23', headers = auth_header)

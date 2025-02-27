@@ -49,6 +49,11 @@ namespace nl::db::sql {
                 updated_at = NOW()
             WHERE id = $2;)~"};
 
+    // Удалить заметку
+    inline constexpr std::string_view kDeleteNote{
+        R"~(DELETE FROM noteluoto.notes
+            WHERE id = $1;)~"};
+
     // Получение тега по user_id и name
     inline constexpr std::string_view kFindTagByName{
         R"~(SELECT * 
@@ -190,4 +195,11 @@ namespace nl::db::sql {
     R"~(DELETE FROM noteluoto.attachments 
         WHERE id = $1;
         )~"};
+
+    // Получить все вложения данной заметки
+    inline constexpr std::string_view kGetAllNoteAttachments{
+        R"~(SELECT file_name, old_file_name
+            FROM noteluoto.attachments 
+            WHERE note_id = $1;
+            )~"};
 }

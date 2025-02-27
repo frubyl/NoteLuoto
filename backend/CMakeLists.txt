@@ -77,10 +77,9 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/models/checklist.hpp
     src/models/attachment.hpp
 
-    src/api/handlers/create_note.hpp
-    src/api/handlers/create_note.cpp
-    src/api/handlers/notes_id.hpp
-    src/api/handlers/notes_id.cpp
+
+    src/api/handlers/note.hpp
+    src/api/handlers/note.cpp
 
     src/api/handlers/tag.hpp
     src/api/handlers/tag.cpp

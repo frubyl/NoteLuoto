@@ -83,7 +83,7 @@ std::string Handler::HandleRequestThrow(
     auto fileNameNew = generateRandomFilename(extension);
 
     try {
-        userver::utils::Async("Save user file", saveFile, file.value, fileNameNew).Wait();
+        saveFile(file.value, fileNameNew);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  
@@ -147,7 +147,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     auto attachment = result.AsSingleRow<models::Attachment>(userver::storages::postgres::kRowTag);
     std::string content;
     try {
-        content = userver::utils::Async("Read user file", readFile, attachment.file_name_).Get();
+        content = readFile(attachment.file_name_);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  
@@ -191,9 +191,8 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     }
 
     auto attachment = result.AsSingleRow<models::Attachment>(userver::storages::postgres::kRowTag);
-
     try {
-        userver::utils::Async("Delete user file", deleteFile, attachment.file_name_).Wait();
+        deleteFile(attachment.file_name_);
     } catch(...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  

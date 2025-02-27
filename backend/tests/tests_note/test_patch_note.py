@@ -5,7 +5,7 @@ from testsuite.databases import pgsql
 # Нет заметки
 
 async def test_patch_note_1(service_client, auth_header):
-    response = await service_client.patch("/notes/999",
+    response = await service_client.patch("/note/999",
                                             json = {"title": "new"},
                                          headers = auth_header)
     assert response.status == 404
@@ -13,7 +13,7 @@ async def test_patch_note_1(service_client, auth_header):
 # Обновляется только title
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_patch_note_2(service_client, auth_header):
-    response = await service_client.patch("/notes/1",
+    response = await service_client.patch("/note/1",
                                          json={"title": "new"},
                                           headers = auth_header)
     assert response.status == 200
@@ -22,7 +22,7 @@ async def test_patch_note_2(service_client, auth_header):
 # Обновляется только body
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_patch_note_3(service_client, auth_header):
-    response = await service_client.patch("/notes/1",
+    response = await service_client.patch("/note/1",
                                          json={"body": "new"},
                                           headers = auth_header)
     assert response.status == 200
@@ -31,7 +31,7 @@ async def test_patch_note_3(service_client, auth_header):
 # Обновляется body и title
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_patch_note_4(service_client, auth_header):
-    response = await service_client.patch("/notes/1",
+    response = await service_client.patch("/note/1",
                                          json={"body": "new",
                                          "title": "new"},
                                           headers = auth_header)

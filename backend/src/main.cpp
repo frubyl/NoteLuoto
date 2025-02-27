@@ -20,8 +20,7 @@
 
 #include "api/handlers/history.hpp"
 
-#include "api/handlers/create_note.hpp"
-#include "api/handlers/notes_id.hpp"
+#include "api/handlers/note.hpp"
 #include "api/handlers/tag.hpp"
 
 #include "api/handlers/checklist.hpp"
@@ -72,8 +71,9 @@ int main(int argc, char* argv[]) {
           .Append<handlers::api::tag::note::post::Handler>()
           .Append<handlers::api::tag::note::del::Handler>()
 
-          .Append<handlers::api::notes::id::get::Handler>()
-          .Append<handlers::api::notes::id::patch::Handler>()
-          .Append<handlers::api::notes::post::Handler>();
+          .Append<handlers::api::note::del::Handler>()
+          .Append<handlers::api::note::get::Handler>()
+          .Append<handlers::api::note::patch::Handler>()
+          .Append<handlers::api::note::post::Handler>();
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

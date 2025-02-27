@@ -1,10 +1,9 @@
 components_manager:
-    task_processors:                  # Task processor is an executor for coroutine tasks
+    task_processors:                  
+        main-task-processor:        
+            worker_threads: $worker-threads        
 
-        main-task-processor:          # Make a task processor for CPU-bound coroutine tasks.
-            worker_threads: $worker-threads         # Process tasks in 4 threads.
-
-        fs-task-processor:            # Make a separate task processor for filesystem bound tasks.
+        fs-task-processor:            
             worker_threads: $worker-fs-threads
 
         grpc-blocking-task-processor:
@@ -14,23 +13,19 @@ components_manager:
     default_task_processor: main-task-processor
 
     components:                       
-
         server:
-            listener:                 # configuring the main listening socket...
-                port: $server-port            # ...to listen on this port and...
-                task_processor: main-task-processor    # ...process incoming requests on this task processor.
+            listener:                 
+                port: $server-port            
+                task_processor: main-task-processor    
         logging:
             fs-task-processor: fs-task-processor
             loggers:
                 default:
-                    file_path: '@stderr'
+                    file_path: '@stderr'        # Куда записываются логи
                     level: $logger-level
-                    overflow_behavior: discard  # Drop logs if the system is too busy to write them down.
+                    overflow_behavior: discard  # Удаление логов, если система слишком занята, чтобы их записать.
 
-        # Dynamic config options. Cache is disabled, updates are disabled.
         dynamic-config:
-            # For most of userver dynamic configs, defaults are used, some are overridden here.
-            # See userver "dynamic config" docs for what configs exist.
             defaults:
                 HTTP_CLIENT_CONNECTION_POOL_SIZE: 1000
                 POSTGRES_DEFAULT_COMMAND_CONTROL:
@@ -82,8 +77,8 @@ components_manager:
             url_trailing_slash: strict-match
 
         # Эндпоинты для работы с заметками
-        handler-post-notes:
-            path: /notes
+        handler-post-note:
+            path: /note
             method: POST
             auth:
                 types:
@@ -93,8 +88,8 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
             
-        handler-get-note-id:
-            path: /notes/{note_id}
+        handler-get-note:
+            path: /note/{note_id}
             method: GET
             auth:
                 types:
@@ -104,8 +99,8 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
-        handler-patch-note-id:
-            path: /notes/{note_id}
+        handler-patch-note:
+            path: /note/{note_id}
             method: PATCH
             auth:
                 types:
@@ -115,6 +110,17 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+        handler-delete-note:
+            path: /note/{note_id}
+            method: DELETE
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+            
         # Эндпоинты для работы с тегами
         handler-post-tags-create:
             path: /tags/create

@@ -5,7 +5,7 @@ from testsuite.databases import pgsql
 # Тестирование создания заметки
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_create_note(service_client, auth_header):
-    response = await service_client.post("/notes",
+    response = await service_client.post("/note",
                                          json={"title": "frubyl",
                                                  "body": "frubasik"}, 
                                         headers = auth_header)
