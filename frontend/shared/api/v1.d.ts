@@ -130,23 +130,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/checklist/item/{item_id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Изменить статус выполненности пункта чеклиста на противоположный */
-        put: operations["updateChecklistItemStatus"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/checklist/item/{item_id}": {
         parameters: {
             query?: never;
@@ -161,7 +144,8 @@ export interface paths {
         delete: operations["deleteChecklistItem"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Изменить статус выполненности пункта чеклиста или его имя */
+        patch: operations["updateChecklistItem"];
         trace?: never;
     };
     "/checklist/{checklist_id}": {
@@ -179,7 +163,8 @@ export interface paths {
         delete: operations["deleteChecklist"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Обновить заголовок чеклиста */
+        patch: operations["getChecklistById"];
         trace?: never;
     };
     "/attachment/{note_id}": {
@@ -432,21 +417,21 @@ export interface components {
         };
         NoteResponse: {
             /** @example 1 */
-            note_id?: number;
+            note_id: number;
             /** @example Заголовок заметки */
-            title?: string;
+            title: string;
             /** @example Описание заметки в формате Markdown */
-            body?: string;
+            body: string;
             /**
              * Format: date-time
              * @example 2025-01-02T12:34:56
              */
-            created_at?: string;
+            created_at: string;
             /**
              * Format: date-time
              * @example 2025-01-02T12:34:56
              */
-            updated_at?: string;
+            updated_at: string;
         };
         Notes: components["schemas"]["NoteResponse"][];
     };
@@ -521,12 +506,12 @@ export interface operations {
                      * @description Имя пользователя должно содержать от 3 до 30 символов, может включать буквы, цифры, подчеркивания и тире.
                      * @example user123
                      */
-                    username?: string;
+                    username: string;
                     /**
                      * @description Пароль должен содержать от 8 до 32 символов, включать минимум одну строчную букву и одну цифру.
                      * @example password123
                      */
-                    password?: string;
+                    password: string;
                 };
             };
         };
@@ -539,7 +524,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example your_jwt_token_here */
-                        access_token?: string;
+                        access_token: string;
                     };
                 };
             };
@@ -881,19 +866,19 @@ export interface operations {
             };
         };
     };
-    updateChecklistItemStatus: {
+    deleteChecklistItem: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description ID пункта чеклиста, статус которого нужно изменить */
+                /** @description ID пункта чеклиста, который нужно удалить */
                 item_id: number;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Статус выполненности пункта успешно изменён */
+            /** @description Пункт успешно удалён из чеклиста */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -916,19 +901,28 @@ export interface operations {
             };
         };
     };
-    deleteChecklistItem: {
+    updateChecklistItem: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description ID пункта чеклиста, который нужно удалить */
+                /** @description ID пункта чеклиста, статус которого нужно изменить */
                 item_id: number;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        /** @description Название нового тега */
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example Buy something */
+                    text?: string;
+                    status?: boolean;
+                };
+            };
+        };
         responses: {
-            /** @description Пункт успешно удалён из чеклиста */
+            /** @description Статус выполненности пункта успешно изменён */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -970,11 +964,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /**
-                         * @description ID чеклиста
-                         * @example 12
-                         */
-                        checklist_id?: number;
                         /**
                          * @description Заголовок чеклиста
                          * @example Shopping List
@@ -1067,6 +1056,49 @@ export interface operations {
                 content?: never;
             };
             /** @description Чеклист с указанным ID не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getChecklistById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID чеклиста, который нужно получить */
+                checklist_id: number;
+            };
+            cookie?: never;
+        };
+        /** @description Название нового тега */
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example Buy something */
+                    title?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Статус выполненности пункта успешно изменён */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Неавторизованный запрос, требуется JWT токен */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Пункт чеклиста с указанным ID не найден */
             404: {
                 headers: {
                     [name: string]: unknown;
