@@ -58,6 +58,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - username
+                - password
               properties:
                 username:
                   type: string
@@ -82,6 +85,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - access_token
                 properties:
                   access_token:
                     type: string
@@ -1177,6 +1182,12 @@ components:
           example: '2025-01-02T12:34:56'                  
     NoteResponse:
       type: object
+      required:
+        - note_id
+        - title
+        - body
+        - created_at
+        - updated_at
       properties:
         note_id:
           type: integer
