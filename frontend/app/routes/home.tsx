@@ -1,3 +1,3 @@
-import { SignInPage } from "pages/sign-in";
+import { HomePage } from "pages/home";
 
-export default SignInPage;
+export default HomePage;
