@@ -20,7 +20,7 @@ export function SignInPage() {
 
   const onSubmit: SubmitHandler<LoginRequest> = async function (body) {
     const { access_token, status } = await signIn(body)
-    
+
     setAccessToken(undefined)
 
     if (status === 404) {
@@ -46,38 +46,39 @@ export function SignInPage() {
 
   return (
     <>
-      <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
-          {accessToken && <label className="block break-words text-sm/6 font-medium text-green-900">Success! Your JWT: { accessToken }</label>}
-        </div>
+      <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 lg:px-8">
+        <div className="w-full max-w-md pb-8 rounded-lg shadow-md bg-[#3a3844]">
+          <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+            <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">Sign in to your account</h2>
+            {accessToken && <label className="block break-words text-sm/6 font-medium text-green-500">Success! Your JWT: {accessToken}</label>}
+          </div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label className="block text-sm/6 font-medium text-gray-900">Username</label>
-              <div className="mt-2">
-                <input className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" required {...register("username")} />
-                {errors.username && <label className="block text-sm/6 font-medium text-red-900">{errors.username.message}</label>}
+          <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              <div>
+                <label className="block text-sm/6 font-medium text-white">Username</label>
+                <div className="mt-2">
+                  <input className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" required {...register("username")} />
+                  {errors.username && <label className="block text-sm/6 font-medium text-red-500">{errors.username.message}</label>}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">Password</label>
+              <div>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="block text-sm/6 font-medium text-white">Password</label>
+                </div>
+                <div className="mt-2">
+                  <input className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" required {...register("password")} />
+                  {errors.password && <label className="block text-sm/6 font-medium text-red-500">{errors.password.message}</label>}
+                </div>
               </div>
-              <div className="mt-2">
-                <input className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" required {...register("password")} />
-                {errors.password && <label className="block text-sm/6 font-medium text-red-900">{errors.password.message}</label>}
+
+              <div className="flex gap-x-4">
+                <button type="submit" className="flex w-1/2 justify-center rounded-md text-center block bg-[#2b2930] text-[#d0bcfe] pt-2 pb-2 text-sm rounded-lg shadow hover:shadow-md hover:bg-[#38343d] transition">Sign in</button>
+                <button className="flex w-1/2 justify-center text-center block bg-[#2b2930] text-[#d0bcfe] pt-2 pb-2 text-sm rounded-lg shadow hover:shadow-md hover:bg-[#38343d] transition">Sign up</button>
               </div>
-            </div>
-
-            <div className="flex gap-x-4">
-              <button type="submit" className="flex w-1/2 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
-              <button className="flex w-1/2 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign up</button>
-            </div>
-          </form>
-
+            </form>
+          </div>
         </div>
       </div>
     </>
