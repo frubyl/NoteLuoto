@@ -1,12 +1,15 @@
 import { useForm } from "react-hook-form"
 import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { LoginRequestSchema } from "shared/api";
 import type { LoginRequest } from "shared/api";
 import { signIn } from "../api/sign-in";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { setAuthToken } from "shared/auth";
 
 export function SignInPage() {
+  let navigate = useNavigate()
+
   const {
     register,
     handleSubmit,
@@ -16,12 +19,10 @@ export function SignInPage() {
     resolver: zodResolver(LoginRequestSchema)
   })
 
-  const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
-
   const onSubmit: SubmitHandler<LoginRequest> = async function (body) {
-    const { access_token, status } = await signIn(body)
+    const [searchParams] = useSearchParams()
 
-    setAccessToken(undefined)
+    const { access_token, status } = await signIn(body)
 
     if (status === 404) {
       setError('username', {
@@ -41,7 +42,14 @@ export function SignInPage() {
       return
     }
 
-    setAccessToken(access_token)
+    if (access_token === undefined) {
+      throw new Error("no access token")
+    }
+
+    setAuthToken(access_token)
+
+    const returnTo = searchParams.get("returnTo") || "/";
+    navigate(returnTo);
   }
 
   return (
@@ -50,7 +58,6 @@ export function SignInPage() {
         <div className="w-full max-w-md pb-8 rounded-lg shadow-md bg-[#3a3844]">
           <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">Sign in to your account</h2>
-            {accessToken && <label className="block break-words text-sm/6 font-medium text-green-500">Success! Your JWT: {accessToken}</label>}
           </div>
 
           <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -75,7 +82,7 @@ export function SignInPage() {
 
               <div className="flex gap-x-4">
                 <button type="submit" className="flex w-1/2 justify-center rounded-md text-center block bg-[#2b2930] text-[#d0bcfe] pt-2 pb-2 text-sm rounded-lg shadow hover:shadow-md hover:bg-[#38343d] transition">Sign in</button>
-                <button className="flex w-1/2 justify-center text-center block bg-[#2b2930] text-[#d0bcfe] pt-2 pb-2 text-sm rounded-lg shadow hover:shadow-md hover:bg-[#38343d] transition">Sign up</button>
+                <Link to="/register" className="flex w-1/2 justify-center text-center block bg-[#2b2930] text-[#d0bcfe] pt-2 pb-2 text-sm rounded-lg shadow hover:shadow-md hover:bg-[#38343d] transition">Sign up</Link>
               </div>
             </form>
           </div>
