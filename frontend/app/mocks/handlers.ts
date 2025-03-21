@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type { LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
+import type { RegisterRequest } from 'shared/api/models'
 
 export const handlers = [
   http.post<never, LoginRequest>('/auth/login', async ({ request }) => {
@@ -19,8 +20,11 @@ export const handlers = [
       access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImpvaG4iLCJpYXQiOjE1MTYyMzkwMjJ9.Vs_Aa0a3lNNSk1rGFzrejXqKk0dfqRQFZQWbhl2JHmU'
     })
   }),
+  http.post<never, RegisterRequest>('/auth/register', async ({ request }) => {
+    return HttpResponse.text('', { status: 201 })
+  }),
   http.get('/notes', async ({ request }) => {
-    
+    console.log(request.headers.get('Authentication'))
 
     return HttpResponse.json<NoteResponse[]>([{
       note_id: 1,
