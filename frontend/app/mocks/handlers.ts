@@ -1,6 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import type { LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
-import type { RegisterRequest } from 'shared/api/models'
+import type { NotePatchRequest, RegisterRequest } from 'shared/api/models'
+
+let noteTitle = "note1"
+let noteBody = "body"
 
 export const handlers = [
   http.post<never, LoginRequest>('/auth/login', async ({ request }) => {
@@ -24,8 +27,6 @@ export const handlers = [
     return HttpResponse.text('', { status: 201 })
   }),
   http.get('/notes', async ({ request }) => {
-    console.log(request.headers.get('Authentication'))
-
     return HttpResponse.json<NoteResponse[]>([{
       note_id: 1,
       title: "note1",
@@ -47,5 +48,27 @@ export const handlers = [
       created_at: "2025-03-12T10:28:47Z",
       updated_at: "2025-03-12T10:28:47Z",
     }])
+  }),
+  http.get('/notes/1', async ({ request }) => {
+    return HttpResponse.json<NotePatchRequest>({
+      title: noteTitle,
+      body: noteBody,
+      created_at: "2025-03-14T10:28:47Z",
+      updated_at: "2025-03-14T10:28:47Z",
+    })
+  }),
+  http.patch<never, NotePatchRequest>('/notes/1', async ({ request }) => {
+    const body = await request.json()
+    if (!body.title || !body.body) {
+      return HttpResponse.text('', { status: 400 })
+    }
+
+    noteTitle = body.title
+    noteBody = body.body
+
+    return HttpResponse.text('', { status: 200 })
+  }),
+  http.delete('/notes/1', async ({ request }) => {
+    return HttpResponse.text('', { status: 200 })
   })
 ]

@@ -23,4 +23,4 @@ const client = createClient<paths>({ baseUrl: backendBaseUrl });
 
 client.use(authMiddleware)
 
-export const { GET, POST, PUT, DELETE } = client;
+export const { GET, POST, PATCH, PUT, DELETE } = client;

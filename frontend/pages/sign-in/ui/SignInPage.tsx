@@ -9,7 +9,8 @@ import { setAuthToken } from "shared/auth";
 
 export function SignInPage() {
   let navigate = useNavigate()
-
+  const [searchParams] = useSearchParams()
+  
   const {
     register,
     handleSubmit,
@@ -20,7 +21,6 @@ export function SignInPage() {
   })
 
   const onSubmit: SubmitHandler<LoginRequest> = async function (body) {
-    const [searchParams] = useSearchParams()
 
     const { access_token, status } = await signIn(body)
 

@@ -26,5 +26,7 @@ export const RegisterRequestSchema = z
   });
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>
 
+export type NotePatchRequest = components['schemas']['NotePatchRequest']
+export type NoteCreateRequest = components['schemas']['NoteCreateRequest']
 export type NoteResponse = components['schemas']['NoteResponse']
 export type NotesRequest = operations['getNotesWithSearchAndPagination']['parameters']['query']
