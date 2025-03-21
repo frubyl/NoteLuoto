@@ -1058,43 +1058,7 @@ paths:
                     - Советы по планированию задач
         '401':
           description: Недействительный или истёкший JWT-токен.
-  /ai/generate_tags/{note_id}:
-    post:
-      summary: Генерация тегов на основе данных замтеки
-      description: Автоматическая генерация тегов на основе текста заметки.
-      operationId: generateTags
-      tags:
-        - AI
-      security:
-        - JWT: []
-      parameters:
-        - in: path
-          name: note_id
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            example: 1
-      responses:
-        '200':
-          description: Список сгенерированных тегов
-          content:
-            application/json:
-              schema:
-                type: array
-                minItems: 1
-                maxItems: 5
-                items:
-                  type: string
-                  minLength: 1
-                  maxLength: 50
-                  example:
-                    - продуктивность
-                    - рабочее место
-        '401':
-          description: Недействительный или истёкший JWT-токен.
-        '404':
-          description: Заметка не найдена
+  
   /suggest/tags/{note_id}:
     post:
       summary: Рекомендации по тегам
