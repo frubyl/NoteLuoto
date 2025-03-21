@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import { getRecentNotes } from "../api/home";
+import { getRecentNotes, createNote } from "../api/home";
 import type { NoteResponse } from "shared/api";
 import { Sidebar } from 'widgets/sidebar';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 export function HomePage() {
   const [notes, setNotes] = useState<NoteResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [newNoteTitle, setNewNoteTitle] = useState<string>("");
+  const [creating, setCreating] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchNotes() {
@@ -24,9 +27,25 @@ export function HomePage() {
         setLoading(false);
       }
     }
-
     fetchNotes();
   }, []);
+
+  const handleCreateNote = async () => {
+    if (!newNoteTitle.trim()) {
+      setError("Please enter a note title.");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const noteId = await createNote({ title: newNoteTitle, body: "" });
+      navigate(`/notes/${noteId}`);
+    } catch (err) {
+      setError("Error creating note.");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -35,22 +54,37 @@ export function HomePage() {
     <div className="flex h-screen">
       <Sidebar />
       <div className="p-6 w-full">
-        <h1 className="text-white drop-shadow text-2xl font-bold mb-6">Recent Notes</h1>
+        <input
+          type="text"
+          placeholder="Enter note title..."
+          value={newNoteTitle}
+          onChange={(e) => setNewNoteTitle(e.target.value)}
+          className="p-1 mb-2 rounded border border-gray-300 w-full"
+        />
+        <button
+          onClick={handleCreateNote}
+          disabled={creating}
+          className="p-2 justify-center rounded-md text-center block bg-black text-[#ccc2dc] text-sm rounded-lg shadow hover:shadow-md hover:bg-[#1a1a1a] transition"
+        >
+          {creating ? "Creating..." : "Create Note"}
+        </button>
+        <h1 className="text-center text-white drop-shadow text-2xl font-bold mb-6">Recent Notes</h1>
+
         <ul className="space-y-4">
           {notes.map((note) => (
             <li key={note.note_id}>
-            <Link
-              to={`/notes/${note.note_id}`}
-              className="block p-4 bg-black rounded-lg shadow hover:shadow-md transition duration-200 hover:bg-[#1a1a1a]"
-            >
-              <div className="flex justify-between items-center">
-                <h2 className="text-[#ccc2dc] text-xl font-semibold">{note.title}</h2>
-                <span className="text-sm text-[#ccc2dc]">
-                  {new Date(note.created_at).toLocaleString()}
-                </span>
-              </div>
-            </Link>
-          </li>
+              <Link
+                to={`/notes/${note.note_id}`}
+                className="block p-4 bg-black rounded-lg shadow hover:shadow-md transition duration-200 hover:bg-[#1a1a1a]"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-[#ccc2dc] text-xl font-semibold">{note.title}</h2>
+                  <span className="text-sm text-[#ccc2dc]">
+                    {new Date(note.created_at).toLocaleString()}
+                  </span>
+                </div>
+              </Link>
+            </li>
           ))}
         </ul>
       </div>

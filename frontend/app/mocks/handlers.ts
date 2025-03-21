@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type { LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
-import type { NotePatchRequest, RegisterRequest } from 'shared/api/models'
+import { type NoteCreateResponse, type NoteCreateRequest, type NotePatchRequest, type RegisterRequest } from 'shared/api/models'
 
 let noteTitle = "note1"
 let noteBody = "body"
@@ -70,5 +70,8 @@ export const handlers = [
   }),
   http.delete('/notes/1', async ({ request }) => {
     return HttpResponse.text('', { status: 200 })
+  }),
+  http.post<never, NoteCreateRequest>('/notes', async ({ request }) => {
+    return HttpResponse.json<NoteCreateResponse>({ note_id: 1 }, { status: 201 })
   })
 ]

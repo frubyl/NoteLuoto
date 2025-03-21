@@ -1,5 +1,5 @@
-import { GET } from "shared/api";
-import type { NoteResponse } from "shared/api";
+import { GET, POST } from "shared/api";
+import type { NoteCreateRequest, NoteResponse } from "shared/api";
 
 export type RecentNotes = {
   status: number,
@@ -13,4 +13,13 @@ export async function getRecentNotes(num: number): Promise<RecentNotes> {
     status: response.status,
     notes: data
   }
+}
+
+// Create a new note
+export async function createNote(payload: NoteCreateRequest): Promise<number> {
+  const { data, response } = await POST("/notes", { body: payload });
+  if (response.status !== 201 || data?.note_id === undefined) {
+    throw new Error("Failed to create note");
+  }
+  return data.note_id;
 }
