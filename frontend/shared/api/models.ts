@@ -31,3 +31,7 @@ export type NoteCreateRequest = components['schemas']['NoteCreateRequest']
 export type NoteResponse = components['schemas']['NoteResponse']
 export type NotesRequest = operations['getNotesWithSearchAndPagination']['parameters']['query']
 export type NoteCreateResponse = operations['createNote']['responses']['201']['content']['application/json']
+
+export type ChatAnswerResponse = operations['getAIAnswer']['responses']['200']['content']['application/json']
+export type ChatHistoryResponse = operations['getAIHistory']['responses']['200']['content']['application/json']
+export type ChatAnswerRequest = operations['getAIAnswer']['requestBody']['content']['application/json']

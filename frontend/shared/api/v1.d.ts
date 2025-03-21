@@ -1545,24 +1545,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        history?: {
-                            query_id?: number;
+                        history: {
+                            query_id: number;
                             /**
                              * @description Запрос пользователя к ИИ.
                              * @example Как мне улучшить свою продуктивность?
                              */
-                            query?: string;
+                            query: string;
                             /**
                              * @description Ответ ИИ на запрос.
                              * @example Рекомендуется использовать технику Pomodoro для улучшения концентрации.
                              */
-                            response?: string;
+                            response: string;
                             /**
                              * Format: date-time
                              * @description Дата и время запроса.
                              * @example 2025-01-02T12:34:56Z
                              */
-                            created_at?: string;
+                            created_at: string;
                         }[];
                     };
                 };
