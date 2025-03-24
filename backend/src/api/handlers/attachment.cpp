@@ -11,54 +11,11 @@
 #include <userver/fs/write.hpp>
 #include <exception> 
 #include <userver/logging/log.hpp>
+#include "../../utils/file_manager.hpp"
 
 namespace nl::handlers::api::attachment {
 
 namespace post {
-
-std::string generateRandomFilename(const std::optional<std::string>& extension) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 200);
-
-    std::stringstream filename;
-    for (int i = 0; i < 50; ++i) {
-        filename << std::hex << dis(gen);
-    }
-    if (extension) {
-        filename << "." << extension.value();
-    }
-    return filename.str();
-}
-
-std::optional<std::string> getFileExtension(const std::optional<std::string>& filename) {
-    if (!filename) {
-        return std::nullopt;
-    }
-    size_t pos = filename.value().rfind('.');
-    if (pos != std::string::npos && pos != 0) {
-        return filename.value().substr(pos + 1);
-    }
-    return std::nullopt;
-}
-
-void saveFile(std::string_view value, std::string fileName) {
-    std::fstream outFile("attachments/" + fileName, std::fstream::binary | std::fstream::out);
-
-    if (!outFile.is_open()) {
-        LOG_ERROR() << "Failed to open file for writing";
-        throw std::runtime_error("Failed to open file for writing");
-    }
-    outFile << value;
-
-    if (outFile.fail()) {
-        LOG_ERROR() << "Error writing to file";
-        throw std::runtime_error("Error writing to file");
-    }
-
-    outFile.close();
-}
-
 Handler::Handler(const userver::components::ComponentConfig& config,
                  const userver::components::ComponentContext& context)
     : HttpHandlerBase(config, context),
@@ -78,19 +35,17 @@ std::string Handler::HandleRequestThrow(
         return {}; 
     }
 
-    auto file = attachment_request.file_;
-    auto extension = getFileExtension(file.filename);
-    auto fileNameNew = generateRandomFilename(extension);
+    std::string newFileName;
 
     try {
-        saveFile(file.value, fileNameNew);
+        newFileName = utils::FileManager::SaveFile(attachment_request.file_);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  
     }
-
+    auto fileName = attachment_request.file_.filename ? attachment_request.file_.filename.value() : "";
     const auto result_add =
-        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kAddAttachmentToNode.data(), fileNameNew, file.filename, note_id);
+        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kAddAttachmentToNode.data(), newFileName, fileName, note_id);
     
     const auto result_set = result_add.AsSetOf<int32_t>();
     int32_t attachment_id = *(result_set.begin());
@@ -101,30 +56,6 @@ std::string Handler::HandleRequestThrow(
 } // namespace post
 
 namespace get {
-
-std::string readFile(std::string fileName) {
-    std::ifstream inFile("attachments/" + fileName, std::ios::binary);
-
-    if (!inFile.is_open()) {
-        LOG_ERROR() << "Failed to open file for reading";
-        throw std::runtime_error("Failed to open file for reading");
-    }
-
-    std::string content;
-    char ch;
-    while (inFile.get(ch)) {
-        content += ch;
-    }
-
-    if (inFile.bad()) {
-        inFile.close();
-        LOG_ERROR() << "Error reading from file";
-        throw std::runtime_error("Error reading from file");
-    }
-
-    inFile.close();
-    return content;
-}
 
 Handler::Handler(const userver::components::ComponentConfig& config,
                  const userver::components::ComponentContext& context)
@@ -147,7 +78,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     auto attachment = result.AsSingleRow<models::Attachment>(userver::storages::postgres::kRowTag);
     std::string content;
     try {
-        content = readFile(attachment.file_name_);
+        content = utils::FileManager::ReadFile(attachment.file_name_);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  
@@ -163,14 +94,6 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
 } // namespace get
 
 namespace del {
-
-void deleteFile(const std::string& fileName) {
-    std::string path = "attachments/" + fileName;
-    if (!std::filesystem::remove(path)) {
-        LOG_ERROR() << "Failed to delete file: " << path;
-        throw std::runtime_error("Failed to delete file");
-    }
-}
 
 Handler::Handler(const userver::components::ComponentConfig& config,
                  const userver::components::ComponentContext& context)
@@ -192,7 +115,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
 
     auto attachment = result.AsSingleRow<models::Attachment>(userver::storages::postgres::kRowTag);
     try {
-        deleteFile(attachment.file_name_);
+        utils::FileManager::DeleteFile(attachment.file_name_);
     } catch(...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
         return {};  

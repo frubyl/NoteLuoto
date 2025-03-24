@@ -1,26 +1,19 @@
 cmake_minimum_required(VERSION 3.12)
 project(noteluoto CXX)
 
+# Подключение стандартных директорий установки 
 include(GNUInstallDirs)
 
-# JWT build conf
-set(CPP_JWT_BUILD_TESTS OFF)
-set(CPP_JWT_BUILD_EXAMPLES OFF)
-# add JWT and libbcrypt subdirectory
-add_subdirectory(third_party/cpp-jwt)
-add_subdirectory(third_party/bcrypt)
+# ================================
+# ДОБАВЛЕНИЕ ЗАВИСИМОСТЕЙ ЮСЕРВЕРА 
+# ================================
 
-option(JWT_BUILD_EXAMPLES OFF)
-
-
-# Adding userver dependency
 find_package(userver COMPONENTS core grpc postgresql QUIET)
-if(NOT userver_FOUND)  # Fallback to subdirectory usage
-    # Enable userver libraries that are needed in this project
+if(NOT userver_FOUND)  #
+    # Включить библиотеки userver, необходимые в этом проекте
     set(USERVER_FEATURE_POSTGRESQL ON CACHE BOOL "" FORCE)
     set(USERVER_FEATURE_GRPC ON CACHE BOOL "" FORCE)
 
-    # Compatibility mode: some systems don't support these features
     set(USERVER_FEATURE_CRYPTOPP_BLAKE2 OFF CACHE BOOL "" FORCE)
     set(USERVER_FEATURE_GRPC_CHANNELZ OFF CACHE BOOL "" FORCE)
     set(USERVER_FEATURE_REDIS_HI_MALLOC ON CACHE BOOL "" FORCE)
@@ -35,24 +28,30 @@ endif()
 
 userver_setup_environment()
 
+# ===========================
+# ДДОБАВЛЕНИЕ ФАЙЛОВ В ПРОЕКТ
+# ===========================
 
-# Common sources
+# Добавление утилит (вспомогательные функции)
 add_library(${PROJECT_NAME}_objs OBJECT
     src/utils/jwt.hpp
     src/utils/jwt.cpp
     src/utils/grpc_client.hpp
     src/utils/grpc_client.cpp
+    src/utils/filename_generator.hpp
+    src/utils/filename_generator.cpp    
+    src/utils/file_manager.hpp
+    src/utils/file_manager.cpp
+)
 
+# Добавление аутентификации
+add_library(${PROJECT_NAME}_objs OBJECT
     src/api/auth/auth_bearer.hpp
     src/api/auth/auth_bearer.cpp
+)
 
-    src/api/handlers/register.hpp
-    src/api/handlers/register.cpp
-    src/api/handlers/login.hpp
-    src/api/handlers/login.cpp
-    src/api/handlers/history.hpp
-    src/api/handlers/history.cpp
-
+# Добавление DTO (Data Transfer Objects)
+add_library(${PROJECT_NAME}_objs OBJECT
     src/dto/user.hpp
     src/dto/user.cpp
     src/dto/history.hpp
@@ -65,7 +64,10 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/dto/item.cpp
     src/dto/attachment.hpp
     src/dto/attachment.cpp
+)
 
+# Добавление моделей данных
+add_library(${PROJECT_NAME}_objs OBJECT
     src/models/query.hpp
     src/models/query.cpp
     src/models/note.hpp
@@ -76,55 +78,77 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/models/checklist.cpp
     src/models/checklist.hpp
     src/models/attachment.hpp
+)
 
-
+# Добавление эндпоинтов
+add_library(${PROJECT_NAME}_objs OBJECT
+    src/api/handlers/register.hpp
+    src/api/handlers/register.cpp
+    src/api/handlers/login.hpp
+    src/api/handlers/login.cpp
+    src/api/handlers/history.hpp
+    src/api/handlers/history.cpp
     src/api/handlers/note.hpp
     src/api/handlers/note.cpp
-
     src/api/handlers/tag.hpp
     src/api/handlers/tag.cpp
-
     src/api/handlers/checklist.hpp
     src/api/handlers/checklist.cpp
-
     src/api/handlers/checklist_item.hpp
     src/api/handlers/checklist_item.cpp
-
     src/api/handlers/attachment.hpp
     src/api/handlers/attachment.cpp
 )
 
+# ===============================
+# ДОБАВЛЕНИЕ И ЛИНКОВКА БИБЛИОТЕК 
+# ===============================
 
-
+# Добавляем библиотеки postgresql и grpc
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::postgresql userver::grpc)
 
 
+# JWT настройка конфига
+set(CPP_JWT_BUILD_TESTS OFF)
+set(CPP_JWT_BUILD_EXAMPLES OFF)
 
-# Link jwt librarys 
+# Добавление JWT и libbcrypt поддиректорий
+add_subdirectory(third_party/cpp-jwt)
+add_subdirectory(third_party/bcrypt)
+option(JWT_BUILD_EXAMPLES OFF)
+
+
+# Линковка jwt библиотеки 
 target_include_directories(${PROJECT_NAME}_objs PUBLIC cpp-jwt)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC cpp-jwt)
 
-# Link bcrypt librarys 
+# Линковка bcrypt библиотеки 
 target_include_directories(${PROJECT_NAME}_objs PUBLIC bcrypt)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC bcrypt)
 
-# The Service
+# Сервис
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
 
 
-# Unit Tests
+
+# =================
+# ДОБАВЛЕНИЕ ТЕСТОВ
+# =================
+
+# Юнит тесты
 add_executable(${PROJECT_NAME}_unittest
     src/unit-tests/jwt_test.cpp
     src/unit-tests/bcrypt_test.cpp
 
 )
 
+# Линковка библиотеки юнит тетсов 
 target_link_libraries(${PROJECT_NAME}_unittest PRIVATE ${PROJECT_NAME}_objs userver::utest)
 add_google_tests(${PROJECT_NAME}_unittest)
 
 
-# Functional Tests
+# Функциональное тестирование - питон 
 userver_testsuite_add_simple(
   SERVICE_TARGET ${PROJECT_NAME}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
@@ -133,15 +157,28 @@ userver_testsuite_add_simple(
   --service-secdist=${CMAKE_SOURCE_DIR}/configs/jwt_config.json
 )
 
+# ==============================
+# КОНФИГУРАЦИЯ УСТАНОВКИ ПРОЕКТА
+# ==============================
 
-
+# Проверка и установка префикса для установки 
 if(DEFINED ENV{PREFIX})
   message(STATUS "Set install prefix: $ENV{PREFIX}")
   file(TO_CMAKE_PATH "$ENV{PREFIX}" PREFIX_PATH)
   set(CMAKE_INSTALL_PREFIX "${PREFIX_PATH}")
 endif()
 
+# Сборка списка конфигурационных файлов (YAML и JSON) из директории configs
+file(GLOB CONFIGS_FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.yaml 
+    ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.json)
 
-file(GLOB CONFIGS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.yaml ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.json)
-install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${PROJECT_NAME})
-install(FILES ${CONFIGS_FILES} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME} COMPONENT ${PROJECT_NAME})
+# Установка основных исполняемых файлов проекта
+install(TARGETS ${PROJECT_NAME} 
+    DESTINATION ${CMAKE_INSTALL_BINDIR} 
+    COMPONENT ${PROJECT_NAME})
+
+# Копируем конфигурационные файлы в системную директорию конфигураций
+install(FILES ${CONFIGS_FILES} 
+    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME} 
+    COMPONENT ${PROJECT_NAME})

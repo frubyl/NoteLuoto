@@ -3,7 +3,7 @@ syntax = "proto3";
 package sync;
 
 service SyncService {
-  rpc CreateNote (NoteResponse) returns (EmptyResponse);
+  rpc AddNote (NoteResponse) returns (EmptyResponse);
   rpc UpdateNote (NoteResponse) returns (EmptyResponse);
   rpc DeleteNote (DeleteResponse) returns (EmptyResponse);
 

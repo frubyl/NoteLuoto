@@ -3,16 +3,25 @@ syntax = "proto3";
 package langchain;
 
 service LangChain {
-  rpc AnswerQuery (UserQuery) returns (QueryAnswer);
-
+  rpc GenerateAnswer (UserQuery) returns (ChatbotAnswer);
+  rpc SemanticSearch (UserQuery) returns (SemanticSearchResult);
+  rpc RecommendPrompts (EmptyRequest) returns (RecommendedPrompts);
 }
 
 message UserQuery {
   string query_text = 1;  
 }
 
-message QueryAnswer {
+message ChatbotAnswer {
   string answer_text = 1;
 }
 
+message SemanticSearchResult {
+  repeated string found_documents_ids = 1;
+}
 
+message EmptyRequest {}
+
+message RecommendedPrompts {
+  repeated string recommended_prompts = 1;
+}

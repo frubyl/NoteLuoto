@@ -6,8 +6,4 @@ logger-level: info
 is-testing: false
 
 server-port: 8080
-server-grpc-port: 8081
-
-hello-endpoint: '[::1]:8081'
-
 dbconnection: 'postgresql://noteluoto_user:password@localhost:5432/noteluoto_db_1'

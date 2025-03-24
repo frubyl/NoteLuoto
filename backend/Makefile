@@ -84,7 +84,7 @@ export DB_CONNECTION := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@servi
 # Build and run service in docker environment
 .PHONY: docker-start-debug docker-start-release
 docker-start-debug docker-start-release: docker-start-%:
-	$(DOCKER_COMPOSE) run -p 8080:8080 -p 8081:8081 --rm noteluoto-container make -- --in-docker-start-$*
+	$(DOCKER_COMPOSE) run -p 8080:8080 -p 8090:8090 --rm noteluoto-container make -- --in-docker-start-$*
 
 .PHONY: docker-start-service-debug docker-start-service-release
 docker-start-service-debug docker-start-service-release: docker-start-service-%: docker-start-%

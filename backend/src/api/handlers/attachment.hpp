@@ -11,7 +11,7 @@
 #include <userver/server/handlers/http_handler_json_base.hpp>
 #include <userver/engine/task/task_processor_fwd.hpp>
 #include <userver/storages/secdist/component.hpp>
-
+#include "../../utils/file_manager.hpp"
 namespace nl::handlers::api::attachment {
 
 namespace post {
@@ -47,6 +47,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+
 };
 } // namespace get
 
@@ -65,6 +66,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+
 };
 } // namespace del
 
