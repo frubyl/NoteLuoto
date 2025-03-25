@@ -35,3 +35,5 @@ export type NoteCreateResponse = operations['createNote']['responses']['201']['c
 export type ChatAnswerResponse = operations['getAIAnswer']['responses']['200']['content']['application/json']
 export type ChatHistoryResponse = operations['getAIHistory']['responses']['200']['content']['application/json']
 export type ChatAnswerRequest = operations['getAIAnswer']['requestBody']['content']['application/json']
+
+export type TagCreateRequest = operations['createTag']['requestBody']['content']['application/json']

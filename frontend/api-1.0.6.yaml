@@ -775,6 +775,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - tag_id
                 properties:
                   tag_id:
                     type: integer
@@ -803,6 +805,9 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - tag_id
+                    - name
                   properties:
                     tag_id:
                       type: integer
@@ -843,6 +848,9 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - tag_id
+                    - name
                   properties:
                     tag_id:
                       type: integer

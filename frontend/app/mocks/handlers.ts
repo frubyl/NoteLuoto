@@ -1,9 +1,20 @@
 import { http, HttpResponse } from 'msw'
-import type { ChatHistoryResponse, LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
-import { type NoteCreateResponse, type NoteCreateRequest, type NotePatchRequest, type RegisterRequest, type ChatAnswerRequest } from 'shared/api'
+import type { LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
+import { type NoteCreateResponse, type NoteCreateRequest, type NotePatchRequest, type RegisterRequest, type ChatAnswerRequest, type TagCreateRequest } from 'shared/api'
 
 let noteTitle = "note1"
 let noteBody = "body"
+
+let noteTags = [
+  { tag_id: 1, name: "work" },
+  { tag_id: 2, name: "personal" },
+]
+
+let allTags = [
+  { tag_id: 1, name: "work" },
+  { tag_id: 2, name: "personal" },
+  { tag_id: 3, name: "urgent" },
+]
 
 const chatHistory: Array<{
   query_id: number;
@@ -100,17 +111,13 @@ export const handlers = [
   http.post<never, NoteCreateRequest>('/notes', async ({ request }) => {
     return HttpResponse.json<NoteCreateResponse>({ note_id: 1 }, { status: 201 })
   }),
-  // New handler for AI answer
   http.post<never, ChatAnswerRequest>('/ai/answer', async ({ request }) => {
     const { question } = await request.json()
-    // Basic validation
     if (!question || question.length < 1 || question.length > 4096) {
       return HttpResponse.text('', { status: 400 })
     }
-    // Generate a simple mock answer and a random query ID
-    const query_id = Math.floor(Math.random() * 1000) + 4 // starting from 4 since we already have 1-3
+    const query_id = Math.floor(Math.random() * 1000) + 4
     const answer = `This is a mocked answer for: "${question}"`
-    // Add to history (prepend to simulate most recent first)
     chatHistory.unshift({
       query_id,
       query: question,
@@ -119,15 +126,52 @@ export const handlers = [
     })
     return HttpResponse.json({ query_id, answer })
   }),
-  // New handler for AI history with pagination
   http.get('/history', async ({ request }) => {
     const url = new URL(request.url)
     const page = Number(url.searchParams.get("page")) || 1
     const limit = Number(url.searchParams.get("limit")) || 20
-    // Since our aiHistory array is sorted descending (most recent first),
-    // we slice based on the requested page.
     const start = (page - 1) * limit
     const paginated = chatHistory.slice(start, start + limit)
     return HttpResponse.json({ history: paginated })
+  }),
+  http.post<never, TagCreateRequest>('/tags/create', async ({ request }) => {
+    const { name } = await request.json()
+    if (!name || name.length < 1 || name.length > 50) {
+      return HttpResponse.text('', { status: 400 })
+    }
+    if (allTags.find(tag => tag.name.toLowerCase() === name.toLowerCase())) {
+      return HttpResponse.text('', { status: 409 })
+    }
+    const newTagId = allTags.length + 1
+    const newTag = { tag_id: newTagId, name }
+    allTags.push(newTag)
+    return HttpResponse.json({ tag_id: newTagId }, { status: 201 })
+  }),
+  http.get('/tags/all', async () => {
+    return HttpResponse.json(allTags)
+  }),
+  http.get('/tags/1', async () => {
+    return HttpResponse.json(noteTags)
+  }),
+  http.post('/tags/1/:tag_id', async ({ params }) => {
+    const tagId = Number(params.tag_id)
+    const tag = allTags.find(t => t.tag_id === tagId)
+    if (!tag) {
+      return HttpResponse.text('', { status: 404 })
+    }
+    if (noteTags.find(t => t.tag_id === tagId)) {
+      return HttpResponse.text('', { status: 409 })
+    }
+    noteTags.push(tag)
+    return HttpResponse.text('', { status: 200 })
+  }),
+  http.delete('/tags/1/:tag_id', async ({ params }) => {
+    const tagId = Number(params.tag_id)
+    const index = noteTags.findIndex(t => t.tag_id === tagId)
+    if (index === -1) {
+      return HttpResponse.text('', { status: 404 })
+    }
+    noteTags.splice(index, 1)
+    return HttpResponse.text('', { status: 200 })
   })
 ]

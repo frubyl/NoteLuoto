@@ -1275,7 +1275,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example 1 */
-                        tag_id?: number;
+                        tag_id: number;
                     };
                 };
             };
@@ -1319,9 +1319,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example 1 */
-                        tag_id?: number;
+                        tag_id: number;
                         /** @example work */
-                        name?: string;
+                        name: string;
                     }[];
                 };
             };
@@ -1354,9 +1354,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example 1 */
-                        tag_id?: number;
+                        tag_id: number;
                         /** @example work */
-                        name?: string;
+                        name: string;
                     }[];
                 };
             };

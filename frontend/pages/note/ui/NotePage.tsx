@@ -3,6 +3,12 @@ import { useParams, useNavigate } from 'react-router';
 import { getNote, updateNote, deleteNote } from "../api/note";
 import type { NotePatchRequest } from "shared/api";
 import { Sidebar } from 'widgets/sidebar';
+import { TagModal } from './TagModal';
+import { 
+  getTagsForNote, 
+  removeTagFromNote, 
+  type Tag 
+} from "../api/tag";
 
 export function NotePage() {
   const { note_id } = useParams();
@@ -12,6 +18,8 @@ export function NotePage() {
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<NotePatchRequest>({ title: "", body: "" });
+  const [noteTags, setNoteTags] = useState<Tag[]>([]);
+  const [tagModalOpen, setTagModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchNote() {
@@ -20,6 +28,8 @@ export function NotePage() {
           const data = await getNote(parseInt(note_id));
           setNote(data);
           setFormData({ title: data.title, body: data.body });
+          const tags = await getTagsForNote(parseInt(note_id));
+          setNoteTags(tags);
         }
       } catch (err) {
         setError("Error fetching note.");
@@ -54,6 +64,18 @@ export function NotePage() {
     }
   };
 
+  const handleRemoveTag = async (tagId: number) => {
+    try {
+      if (note_id) {
+        await removeTagFromNote(parseInt(note_id), tagId);
+        const tags = await getTagsForNote(parseInt(note_id));
+        setNoteTags(tags);
+      }
+    } catch (err) {
+      setError("Error removing tag.");
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!note) return <div>No note found</div>;
@@ -62,6 +84,26 @@ export function NotePage() {
     <div className="flex h-screen">
       <Sidebar />
       <div className="p-6 w-full">
+        <div className="mb-4 flex items-center space-x-2">
+          <button
+            onClick={() => setTagModalOpen(true)}
+            className="bg-green-500 text-white px-3 py-1 rounded"
+          >
+            Add Tag
+          </button>
+          {noteTags.map(tag => (
+            <div key={tag.tag_id} className="bg-gray-200 text-gray-800 px-3 py-1 rounded flex items-center">
+              <span>{tag.name}</span>
+              <button
+                onClick={() => handleRemoveTag(tag.tag_id)}
+                className="ml-2 text-red-500 font-bold"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+
         {editing ? (
           <div>
             <input
@@ -103,6 +145,16 @@ export function NotePage() {
           </div>
         )}
       </div>
+      {tagModalOpen && note_id && (
+        <TagModal 
+          noteId={parseInt(note_id)}
+          onClose={() => setTagModalOpen(false)}
+          onTagAdded={async () => {
+            const tags = await getTagsForNote(parseInt(note_id));
+            setNoteTags(tags);
+          }}
+        />
+      )}
     </div>
   );
 }
