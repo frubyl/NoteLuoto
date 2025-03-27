@@ -23,6 +23,11 @@ struct Checklist final {
     std::chrono::system_clock::time_point updated_at_;
 };
 
+struct ChecklistWithId final {
+    int32_t checklist_id_;
+    std::string title_;
+    std::chrono::system_clock::time_point updated_at_;
+};
 
 userver::formats::json::Value Serialize(
     const Item& item,

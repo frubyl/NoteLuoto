@@ -30,6 +30,7 @@ services:
 
         ports:
           - 8080:8080
+          - 8090:8090
         working_dir: /backend
         entrypoint:
           - ./tests/run_as_user.sh

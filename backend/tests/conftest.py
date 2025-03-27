@@ -14,7 +14,7 @@ def form_data(load_binary):
 
 @pytest.fixture
 def auth_header():
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTc0MTExMDk2OSwidXNlcl9pZCI6MX0.kKAb4APkc5_S0O45k-R7mZ1Wi8yar4fy98St5S6gwJ4"
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTc0MzcxNTcyMywidXNlcl9pZCI6MX0.B2cdOayFxAUZwexYwWwO6u0in1jY3l6G26nIftpnSr8"
     headers = {
         "Authorization": f"Token {token}"
     }

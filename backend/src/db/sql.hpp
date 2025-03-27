@@ -107,7 +107,14 @@ namespace nl::db::sql {
     R"~(DELETE FROM noteluoto.note_tags
         WHERE note_id = $1 AND tag_id = $2;
         )~"};
-        
+    
+    // Получить все чеклисты заметки 
+    inline constexpr std::string_view kGetAllNoteChecklists{
+        R"~(SELECT id, title, updated_at
+            FROM noteluoto.checklists
+            WHERE note_id = $1;)~"};
+
+
     // Создать чеклист 
     inline constexpr std::string_view kCreateChecklist{
     R"~(INSERT INTO noteluoto.checklists (note_id, title)

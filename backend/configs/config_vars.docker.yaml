@@ -1,10 +1,11 @@
 worker-threads: 4
 worker-fs-threads: 2
-worker-grpc-threads: 2
+worker-grpc-threads: 4
 logger-level: debug
 
 is-testing: false
 
 server-port: 8080
+note-sync-endpoint: 8090
 
 dbconnection: 'postgresql://user:password@service-postgres:5432/noteluoto_db_1'

@@ -29,29 +29,33 @@ endif()
 userver_setup_environment()
 
 # ===========================
-# ДДОБАВЛЕНИЕ ФАЙЛОВ В ПРОЕКТ
+# ДОБАВЛЕНИЕ ФАЙЛОВ В ПРОЕКТ
 # ===========================
 
-# Добавление утилит (вспомогательные функции)
 add_library(${PROJECT_NAME}_objs OBJECT
+    # Утилиты
     src/utils/jwt.hpp
     src/utils/jwt.cpp
-    src/utils/grpc_client.hpp
-    src/utils/grpc_client.cpp
     src/utils/filename_generator.hpp
     src/utils/filename_generator.cpp    
     src/utils/file_manager.hpp
     src/utils/file_manager.cpp
-)
+    src/utils/data_to_text_formatter.hpp
+    src/utils/data_to_text_formatter.cpp
 
-# Добавление аутентификации
-add_library(${PROJECT_NAME}_objs OBJECT
+    # gRPC - клиенты
+    src/grpc_clients/grpc_sync_client.hpp
+    src/grpc_clients/grpc_sync_client.cpp
+    src/grpc_clients/grpc_langchain_client.hpp
+    src/grpc_clients/grpc_langchain_client.cpp
+    src/grpc_clients/grpc_tag_recommender_client.hpp
+    src/grpc_clients/grpc_tag_recommender_client.cpp
+
+    # Аутентификация
     src/api/auth/auth_bearer.hpp
     src/api/auth/auth_bearer.cpp
-)
 
-# Добавление DTO (Data Transfer Objects)
-add_library(${PROJECT_NAME}_objs OBJECT
+    # DTO (Data Transfer Objects)
     src/dto/user.hpp
     src/dto/user.cpp
     src/dto/history.hpp
@@ -64,10 +68,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/dto/item.cpp
     src/dto/attachment.hpp
     src/dto/attachment.cpp
-)
 
-# Добавление моделей данных
-add_library(${PROJECT_NAME}_objs OBJECT
+    # Модели данных
     src/models/query.hpp
     src/models/query.cpp
     src/models/note.hpp
@@ -78,10 +80,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/models/checklist.cpp
     src/models/checklist.hpp
     src/models/attachment.hpp
-)
 
-# Добавление эндпоинтов
-add_library(${PROJECT_NAME}_objs OBJECT
+    # Эндпоинты
     src/api/handlers/register.hpp
     src/api/handlers/register.cpp
     src/api/handlers/login.hpp
@@ -100,13 +100,13 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/api/handlers/attachment.cpp
 )
 
+
 # ===============================
 # ДОБАВЛЕНИЕ И ЛИНКОВКА БИБЛИОТЕК 
 # ===============================
 
 # Добавляем библиотеки postgresql и grpc
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::postgresql userver::grpc)
-
 
 # JWT настройка конфига
 set(CPP_JWT_BUILD_TESTS OFF)
@@ -116,7 +116,6 @@ set(CPP_JWT_BUILD_EXAMPLES OFF)
 add_subdirectory(third_party/cpp-jwt)
 add_subdirectory(third_party/bcrypt)
 option(JWT_BUILD_EXAMPLES OFF)
-
 
 # Линковка jwt библиотеки 
 target_include_directories(${PROJECT_NAME}_objs PUBLIC cpp-jwt)
@@ -129,6 +128,15 @@ target_link_libraries(${PROJECT_NAME}_objs PUBLIC bcrypt)
 # Сервис
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
+
+
+# =======================
+# ДОБАВЛЕНИЕ ПРОТО ФАЙЛОВ 
+# =======================
+userver_add_grpc_library(${PROJECT_NAME}-proto PROTOS samples/SyncService.proto
+						      samples/Langchain.proto
+						      samples/TagRecommender.proto)
+target_link_libraries(${PROJECT_NAME}_objs PUBLIC ${PROJECT_NAME}-proto)
 
 
 

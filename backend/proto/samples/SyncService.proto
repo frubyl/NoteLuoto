@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package notes.sync;
+
+service SyncService {
+  rpc AddNote (NoteRequest) returns (EmptyResponse);
+  rpc UpdateNote (NoteRequest) returns (EmptyResponse);
+  rpc DeleteNote (DeleteRequest) returns (EmptyResponse);
+
+}
+
+message NoteRequest {
+  int64 note_id = 1;  
+  string full_text = 2;      
+}
+
+message DeleteRequest {
+  int64 note_id = 1;  
+}
+
+message EmptyResponse {}

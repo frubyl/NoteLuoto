@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <optional>
+#include "../../dto/note.hpp"
 #include <userver/components/component_config.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/server/http/http_request.hpp>
@@ -9,6 +10,8 @@
 #include <userver/storages/postgres/postgres_fwd.hpp>
 #include <userver/storages/secdist/component.hpp>
 #include <userver/engine/task/task_processor_fwd.hpp>
+#include "../../grpc_clients/grpc_sync_client.hpp"
+#include "../../utils/data_to_text_formatter.hpp"
 
 namespace nl::handlers::api::note {
 
@@ -27,6 +30,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+
 };
 } // namespace get
 
@@ -46,6 +50,9 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  void updateNote(dto::NoteRequest& noteRequest) const;
+    grpc::clients::NoteSyncClient& client_; 
+  utils::DataToTextFormatter dataToTextFormatter_;
 };
 } // namespace patch
 
@@ -64,7 +71,9 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
        
         private:
          const userver::storages::postgres::ClusterPtr cluster_;
-       };
+           grpc::clients::NoteSyncClient& client_; 
+         utils::DataToTextFormatter dataToTextFormatter_;
+        };
 } // namespace post
 
 namespace del {
@@ -82,6 +91,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
         
         private:
                 const userver::storages::postgres::ClusterPtr cluster_;
+                grpc::clients::NoteSyncClient& client_; 
         };
 } // namespace del
 }  // namespace nl::handlers::api::note

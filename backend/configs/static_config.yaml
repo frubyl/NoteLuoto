@@ -34,6 +34,31 @@ components_manager:
 
         testsuite-support: {}
 
+        grpc-client-common:
+            # The TaskProcessor for blocking connection initiation
+            blocking-task-processor: grpc-blocking-task-processor
+
+        grpc-client-factory:
+            # Optional channel parameters for gRPC Core
+            # https://grpc.github.io/grpc/core/group__grpc__arg__keys.html
+            channel-args: {}
+            middlewares:
+              - grpc-client-logging
+              - grpc-client-deadline-propagation
+
+        grpc-client-logging:
+        grpc-client-deadline-propagation:
+  
+
+        note-sync-client: 
+            endpoint: localhost:8090
+
+        langchain-client: 
+            endpoint: localhost:8090
+
+        tag-recommender-client:
+            endpoint: localhost:8090
+
         http-client:
             load-enabled: $is-testing
             fs-task-processor: fs-task-processor
