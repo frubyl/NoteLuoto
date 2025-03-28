@@ -190,6 +190,7 @@ paths:
             enum:
               - semantic
               - exact
+              - none
             example: semantic
           description: Тип поиска - семантический или точный.
         - in: query
