@@ -16,6 +16,6 @@ async def test_checklist_create_item_2(service_client, auth_header):
                                         json = {"text": "text"},
                                          headers = auth_header)
     assert response.status == 201
-    assert response.json()["item_id"]== 2
+    assert response.json()["item_id"]== 3
 
     

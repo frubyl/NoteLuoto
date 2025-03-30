@@ -11,18 +11,32 @@ VALUES ('First query', 'First response', 1, '2025-03-10 12:30:00'),
 INSERT INTO noteluoto.notes (title, body, user_id, created_at, updated_at)
 VALUES  ('title', 'body', 1, '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
+
+INSERT INTO noteluoto.notes (id, title, body, user_id, created_at, updated_at)
+VALUES  (4, 'title4', 'body4', 1, '2025-03-10 12:00:00', '2025-03-10 12:00:00'),
+        (5, 'title', 'body', 1, '2025-03-10 11:00:00', '2025-03-10 11:00:00'),
+        (6, 'title', 'body', 1, '2025-03-10 10:00:00', '2025-03-10 10:00:00');
+
+
 INSERT INTO noteluoto.tags (user_id, name)
 VALUES (1, 'tag1'),
-       (1, 'tag2');
+       (1, 'tag2'),
+       (1, 'tag3');
 
 INSERT INTO noteluoto.note_tags (note_id, tag_id)
-VALUES (1, 2);
+VALUES (1, 2),
+       (4, 3),
+       (4, 2),
+       (5, 3),
+       (6, 3);
 
 INSERT INTO noteluoto.checklists (note_id, title, created_at, updated_at)
-VALUES (1, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
+VALUES (1, 'title', '2025-03-10 12:30:00', '2025-03-10 12:30:00'),
+       (4, 'checklistTitle', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
 INSERT INTO noteluoto.checklist_items (checklist_id, text, created_at, updated_at)
-VALUES (1, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
+VALUES (1, 'item1', '2025-03-10 12:30:00', '2025-03-10 12:30:00'), 
+       (2, 'checklistItem1', '2025-03-10 12:30:00', '2025-03-10 12:30:00');
 
 
 INSERT INTO noteluoto.checklists (note_id, id, title, created_at, updated_at)

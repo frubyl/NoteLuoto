@@ -14,6 +14,8 @@ CMAKE_RELEASE_FLAGS += -DCMAKE_BUILD_TYPE=Release $(CMAKE_COMMON_FLAGS)
 .PHONY: all
 all: test-debug test-release
 
+
+
 # Run cmake
 .PHONY: cmake-debug
 cmake-debug:
@@ -29,6 +31,7 @@ build_release/CMakeCache.txt: cmake-release
 # Build using cmake
 .PHONY: build-debug build-release
 build-debug build-release: build-%: build_%/CMakeCache.txt
+	mkdir -p build_$*/attachments
 	cmake --build build_$* -j $(NPROCS) --target noteluoto
 
 # Test

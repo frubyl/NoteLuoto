@@ -17,7 +17,7 @@ async def test_create_tag_2(service_client, auth_header):
                                             json = {"name": "createtag"},
                                           headers = auth_header)
     assert response.status == 201
-    assert response.json()["tag_id"] == 3
+    assert response.json()["tag_id"] == 4
 
 
 

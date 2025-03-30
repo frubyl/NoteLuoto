@@ -1,10 +1,16 @@
 import pathlib
 import pytest
 import aiohttp 
-
 from testsuite.databases.pgsql import discover
 
-pytest_plugins = ['pytest_userver.plugins.postgresql', 'pytest_userver.plugins.core']
+
+import grpc
+from samples import SyncService_pb2, SyncService_pb2_grpc
+from samples import Langchain_pb2, Langchain_pb2_grpc
+from samples import TagRecommender_pb2, TagRecommender_pb2_grpc
+
+
+pytest_plugins = ['pytest_userver.plugins.postgresql', 'pytest_userver.plugins.core', 'pytest_userver.plugins.grpc']
 @pytest.fixture
 def form_data(load_binary):
     form_data = aiohttp.FormData()
@@ -41,3 +47,5 @@ def pgsql_local(service_source_dir, pgsql_local_create):
         [service_source_dir.joinpath('postgresql/schemas')],
     )
     return pgsql_local_create(list(databases.values()))
+
+

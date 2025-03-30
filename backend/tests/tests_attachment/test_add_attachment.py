@@ -12,5 +12,5 @@ async def test_add_attachment_2(service_client, form_data, auth_header):
     response = await service_client.post('/attachment/1', data=form_data,
                                                             headers = auth_header)
     assert response.status == 200
-    assert response.content.decode() == "{attachment_id:1}"
+    assert response.content.decode() == '{"attchment_id":1}'
  

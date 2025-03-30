@@ -15,8 +15,8 @@ namespace nl::grpc::clients  {
 
             LangchainClient(const userver::components::ComponentConfig& config, const userver::components::ComponentContext& context);
            
-            std::string GenerateAnswer(std::string query) ;
-            std::vector<int64_t> SemanticSearch(std::string query) ;
+            std::string GenerateAnswer(const std::string& query) ;
+            std::vector<int64_t> SemanticSearch(const std::string& query) ;
             std::vector<std::string> RecommendPrompts() ;
 
             static userver::yaml_config::Schema GetStaticConfigSchema();

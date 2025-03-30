@@ -68,6 +68,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/dto/item.cpp
     src/dto/attachment.hpp
     src/dto/attachment.cpp
+    src/dto/search_params.hpp
+    src/dto/search_params.cpp
 
     # Модели данных
     src/models/query.hpp
@@ -98,6 +100,20 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/api/handlers/checklist_item.cpp
     src/api/handlers/attachment.hpp
     src/api/handlers/attachment.cpp
+    src/api/handlers/notes.hpp
+    src/api/handlers/notes.cpp
+    src/api/handlers/suggest.hpp
+    src/api/handlers/suggest.cpp
+    src/api/handlers/ai_answer.hpp
+    src/api/handlers/ai_answer.cpp
+
+    # Сервис для поиска заметок
+    src/search_service/search_service.cpp
+    src/search_service/search_strategy.cpp
+    src/search_service/search_strategy.hpp
+    src/search_service/strategies/exact_search.cpp
+    src/search_service/strategies/none_search.cpp
+    src/search_service/strategies/semantic_search.cpp
 )
 
 

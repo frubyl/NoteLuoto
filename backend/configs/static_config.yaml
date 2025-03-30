@@ -101,7 +101,51 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
+        handler-post-suggest-tags:
+            path: /suggest/tags/{note_id}
+            method: POST
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
+        handler-get-suggest-queries:
+            path: /suggest/queries
+            method: GET
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
+        handler-post-ai-answer:
+            path: /ai/answer
+            method: POST
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
         # Эндпоинты для работы с заметками
+        handler-get-all-notes:
+            path: /notes
+            method: GET
+            auth:
+                types:
+                - bearer
+                required: true
+            task_processor: main-task-processor
+            throttling_enabled: false
+            url_trailing_slash: strict-match
+
         handler-post-note:
             path: /note
             method: POST

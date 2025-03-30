@@ -15,7 +15,7 @@ namespace nl::grpc::clients  {
 
             TagRecommenderClient(const userver::components::ComponentConfig& config, const userver::components::ComponentContext& context);
            
-            std::vector<std::string> RecommendTags(int64_t note_id, std::vector<std::string> existingTags);
+            std::vector<std::string> RecommendTags(int64_t note_id, std::vector<std::string>& existingTags);
 
             static userver::yaml_config::Schema GetStaticConfigSchema();
             

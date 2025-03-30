@@ -22,7 +22,12 @@ namespace nl::db::sql {
             ORDER BY created_at DESC
             LIMIT $2
             OFFSET $3;)~"};
-     
+    inline constexpr std::string_view kInsertAiHistory{
+            R"~(
+                INSERT INTO noteluoto.ai_history (user_id, query, response)
+                VALUES ($1, $2, $3)
+                RETURNING id;
+            )~"};
     // Создание заметки
     inline constexpr std::string_view kCreateNote{
         R"~(INSERT INTO noteluoto.notes (title, body, user_id)
@@ -34,6 +39,20 @@ namespace nl::db::sql {
         R"~(SELECT title, body, created_at, updated_at
             FROM noteluoto.notes 
             WHERE id = $1;)~"};
+
+    inline constexpr std::string_view kFilterByUser{
+        R"~(SELECT id FROM noteluoto.notes
+            WHERE id = ANY($1) AND user_id = $2;)~"};
+   
+    // Получение заметок по массиву id с пагинацией
+    inline constexpr std::string_view kGetNotes{
+        R"~(
+            SELECT id, title, body, created_at, updated_at
+            FROM noteluoto.notes
+            WHERE id = ANY($1)
+            ORDER BY updated_at DESC
+            LIMIT $2 OFFSET $3
+        )~"};
 
     // Обновление заголовка заметки
     inline constexpr std::string_view kUpdateNoteTitle{
@@ -49,6 +68,14 @@ namespace nl::db::sql {
                 updated_at = NOW()
             WHERE id = $2;)~"};
 
+    // Обновление тела заметки
+    inline constexpr std::string_view kGetAllUserNotes{
+        R"~(SELECT id FROM noteluoto.notes
+            WHERE user_id = $1
+            ORDER BY updated_at DESC;)~"};
+
+
+             
     // Удалить заметку
     inline constexpr std::string_view kDeleteNote{
         R"~(DELETE FROM noteluoto.notes
@@ -78,6 +105,14 @@ namespace nl::db::sql {
     // Получить теги заметки
     inline constexpr std::string_view kGetNoteTags{
         R"~(SELECT t.id, t.name
+            FROM noteluoto.tags t
+            JOIN noteluoto.note_tags nt ON t.id = nt.tag_id
+            WHERE nt.note_id = $1;
+            )~"};
+
+    // Получить теги заметки без id
+    inline constexpr std::string_view kGetNoteTagsWithoutId{
+        R"~(SELECT t.name
             FROM noteluoto.tags t
             JOIN noteluoto.note_tags nt ON t.id = nt.tag_id
             WHERE nt.note_id = $1;
@@ -209,4 +244,42 @@ namespace nl::db::sql {
             FROM noteluoto.attachments 
             WHERE note_id = $1;
             )~"};
+
+  // Поиск заметок по пользователю и запросу 
+  inline constexpr std::string_view kGetAllUserNotesWithQuery{
+    R"~(SELECT DISTINCT n.id, n.updated_at
+        FROM noteluoto.notes n
+        LEFT JOIN noteluoto.checklists cl ON n.id = cl.note_id
+        LEFT JOIN noteluoto.checklist_items ci ON cl.id = ci.checklist_id
+        WHERE n.user_id = $1
+        AND (
+            -- Полнотекстовый поиск по заметке
+            to_tsvector('english', n.title || ' ' || n.body) @@ plainto_tsquery('english', $2)
+            
+            -- ИЛИ поиск по чеклистам
+            OR (
+                to_tsvector('english', cl.title) @@ plainto_tsquery('english', $2)
+                OR to_tsvector('english', ci.text) @@ plainto_tsquery('english', $2)
+            )
+        )
+        ORDER BY n.updated_at DESC;
+        )~"};
+
+  // Поиск заметок по тегам
+  inline constexpr std::string_view kFilterByTags{
+    R"~(WITH filtered_notes AS (
+            SELECT nt.note_id
+            FROM noteluoto.note_tags nt
+            JOIN noteluoto.tags t ON nt.tag_id = t.id
+            WHERE nt.note_id = ANY($1)
+            AND t.name = ANY($2)
+            GROUP BY nt.note_id
+            HAVING COUNT(DISTINCT t.name) = array_length($2, 1)
+        )
+        SELECT *
+        FROM noteluoto.notes n
+        JOIN filtered_notes fn ON n.id = fn.note_id
+        ORDER BY n.updated_at DESC
+        LIMIT $3 OFFSET $4;)~"};
+       
 }

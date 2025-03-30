@@ -21,7 +21,10 @@
 #include "api/handlers/login.hpp"
 #include "api/handlers/history.hpp"
 #include "api/handlers/note.hpp"
+#include "api/handlers/notes.hpp"
+#include "api/handlers/suggest.hpp"
 #include "api/handlers/tag.hpp"
+#include "api/handlers/ai_answer.hpp"
 #include "api/handlers/checklist.hpp"
 #include "api/handlers/checklist_item.hpp"
 #include "api/handlers/attachment.hpp"
@@ -87,10 +90,18 @@ int main(int argc, char* argv[]) {
           .Append<handlers::api::tag::note::post::Handler>()
           .Append<handlers::api::tag::note::del::Handler>()
 
+          // Добавляем эндпоинты для работы с рекомендациями
+          .Append<handlers::api::suggest::queries::Handler>()
+          .Append<handlers::api::suggest::tags::Handler>()
+
+          // Добавляем эндпоинты для получения ответа бота
+          .Append<handlers::api::ai::answer::Handler>()
+
           // Добавляем эндпоинты для работы с заметками
           .Append<handlers::api::note::del::Handler>()
           .Append<handlers::api::note::get::Handler>()
           .Append<handlers::api::note::patch::Handler>()
+          .Append<handlers::api::get::notes::Handler>()
           .Append<handlers::api::note::post::Handler>();
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

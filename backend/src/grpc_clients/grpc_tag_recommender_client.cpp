@@ -30,7 +30,7 @@ namespace nl::grpc::clients {
             "tag-recommender-client", config["endpoint"].As<std::string>())) {}
     
 
-    std::vector<std::string> TagRecommenderClient::RecommendTags(int64_t note_id, std::vector<std::string> existingTags) {
+    std::vector<std::string> TagRecommenderClient::RecommendTags(int64_t note_id, std::vector<std::string>& existingTags) {
         tag_recommender::TagRecommendationRequest request;
         request.set_note_id(note_id);
         for (auto el : existingTags) {

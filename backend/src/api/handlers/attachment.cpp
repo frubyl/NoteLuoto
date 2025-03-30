@@ -49,8 +49,11 @@ std::string Handler::HandleRequestThrow(
     
     const auto result_set = result_add.AsSetOf<int32_t>();
     int32_t attachment_id = *(result_set.begin());
+    userver::formats::json::ValueBuilder response_body;
+    response_body["attchment_id"] = attachment_id;
+
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
-    return "{attachment_id:" + std::to_string(attachment_id) + "}";
+    return ToString(response_body.ExtractValue());
 }
 
 } // namespace post

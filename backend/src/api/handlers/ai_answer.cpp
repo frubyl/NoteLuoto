@@ -1,0 +1,55 @@
+#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/postgres/component.hpp>
+#include <userver/logging/log.hpp>
+#include <userver/utils/async.hpp>
+#include <userver/engine/sleep.hpp>
+#include <filesystem>
+#include "ai_answer.hpp"
+#include "../../db/sql.hpp"
+
+namespace nl::handlers::api::ai::answer {
+
+        Handler::Handler(const userver::components::ComponentConfig& config,
+            const userver::components::ComponentContext& context)
+        : HttpHandlerJsonBase(config, context),
+          cluster_(context
+            .FindComponent<userver::components::Postgres>(
+                "postgres-db-1")
+            .GetCluster()),
+          langchainClient_(context.FindComponent<grpc::clients::LangchainClient>()){}
+
+    userver::formats::json::Value Handler::HandleRequestJsonThrow(
+    const userver::server::http::HttpRequest& request,
+    const userver::formats::json::Value& request_json,
+    userver::server::request::RequestContext& context) const  {
+        int32_t user_id = context.GetData<int32_t>("user_id");
+
+        auto request_body = userver::formats::json::FromString(request.RequestBody());
+        auto query =  request_body["question"].As<std::string>();
+
+        auto answer = langchainClient_.GenerateAnswer(query);
+
+        int32_t query_id = addQueryAndAnswerToHistory(user_id, query, answer);
+        request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
+        return buildResponsebody(query_id, answer);
+        
+    }
+
+    int32_t Handler::addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const {
+        const auto result = cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+            db::sql::kInsertAiHistory.data(), user_id, query, answer);
+        const auto result_set = result.AsSetOf<int32_t>();
+        int32_t note_id = *(result_set.begin());
+        return note_id;
+    }
+    
+
+    userver::formats::json::Value Handler::buildResponsebody(int32_t query_id, std::string& answer) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["query_id"] = query_id;
+        response_body["answer"] = answer;
+        return response_body.ExtractValue();
+    }
+
+
+}  // namespace nl::handlers::api::ai::answer

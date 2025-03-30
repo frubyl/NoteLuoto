@@ -8,6 +8,10 @@ async def test_all_tags(service_client, auth_header):
                                          headers = auth_header)
     expected = [
         {
+            "tag_id": 3,
+            "name": "tag3"
+        },
+        {
             "tag_id": 2,
             "name": "tag2"
         },

@@ -30,7 +30,7 @@ namespace nl::grpc::clients {
             "langchain-client", config["endpoint"].As<std::string>())) {}
     
 
-    std::string LangchainClient::GenerateAnswer(std::string query) {
+    std::string LangchainClient::GenerateAnswer(const std::string& query) {
        langchain::UserQuery request;
        request.set_query_text(std::move(query));
        auto response = client_.GenerateAnswer(request);
@@ -38,7 +38,7 @@ namespace nl::grpc::clients {
     }
 
     
-    std::vector<int64_t> LangchainClient::SemanticSearch(std::string query) {
+    std::vector<int64_t> LangchainClient::SemanticSearch(const std::string& query) {
        langchain::UserQuery request;
        request.set_query_text(std::move(query));
        auto response = client_.SemanticSearch(request);

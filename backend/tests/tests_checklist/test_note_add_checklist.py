@@ -14,6 +14,6 @@ async def test_note_add_checklist_2(service_client, auth_header):
                                         json = {"title": "title"},
                                          headers = auth_header)
     assert response.status == 201
-    assert response.json()["checklist_id"]== 2
+    assert response.json()["checklist_id"]== 3
 
     
