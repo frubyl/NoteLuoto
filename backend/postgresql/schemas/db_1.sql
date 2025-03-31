@@ -1,5 +1,19 @@
-DROP SCHEMA IF EXISTS noteluoto CASCADE;
+-- Установка необходимых расширений
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS unaccent;
 
+-- Создание конфигурации для русского (если не существует)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_ts_config WHERE cfgname = 'russian'
+  ) THEN
+    CREATE TEXT SEARCH CONFIGURATION russian (COPY = simple);
+  END IF;
+END
+$$;
+
+DROP SCHEMA IF EXISTS noteluoto CASCADE;
 CREATE SCHEMA IF NOT EXISTS noteluoto;
 
 CREATE TABLE IF NOT EXISTS noteluoto.users (
@@ -225,3 +239,8 @@ CREATE INDEX idx_attachments_note_id ON noteluoto.attachments (note_id);
 
 -- Индекс на user_id в таблице ai_history для ускорения поиска запросов ИИ по пользователю
 CREATE INDEX idx_ai_history_user_id ON noteluoto.ai_history (user_id);
+
+CREATE INDEX idx_notes_fts_ru ON noteluoto.notes 
+  USING gin(to_tsvector('russian', title || ' ' || body));
+CREATE INDEX idx_notes_fts_en ON noteluoto.notes 
+  USING gin(to_tsvector('english', title || ' ' || body));

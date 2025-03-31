@@ -119,9 +119,35 @@ async def test_get_all_notes_5(service_client, auth_header):
 # ТОЧНЫЙ ПОИСК 
 # ============
 
-# Только точный поиск - слово в заголовке
+# Только точный поиск - русский язык
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_get_all_notes_6(service_client, auth_header):
+    response = await service_client.get("/notes",
+                                        params = {"page":  "1",
+                                                  "limit":  "20", 
+                                                  "searchType": "exact",
+                                                  "query": "заголовок"},
+                                        headers=auth_header)
+    expected = {
+                "total_count" : 1,
+                "notes": [
+                {
+                      
+                    "note_id": 7,
+                    "title": "заголовок",
+                    "body": "body",
+                    "created_at": "2025-03-10T07:00:00+00:00",
+                    "updated_at": "2025-03-10T07:00:00+00:00"
+                
+                }
+                ]
+    }
+    assert response.status == 200
+    assert response.json() == expected
+
+# Только точный поиск - слово в заголовке
+@pytest.mark.pgsql('db_1', files=['initial_data.sql'])
+async def test_get_all_notes_7(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
@@ -147,7 +173,7 @@ async def test_get_all_notes_6(service_client, auth_header):
 
 # Только точный поиск - слово в теле
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_get_all_notes_7(service_client, auth_header):
+async def test_get_all_notes_8(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
@@ -170,7 +196,7 @@ async def test_get_all_notes_7(service_client, auth_header):
 
 # Только точный поиск - слово в заголовке чеклиста
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_get_all_notes_8(service_client, auth_header):
+async def test_get_all_notes_9(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
@@ -194,7 +220,7 @@ async def test_get_all_notes_8(service_client, auth_header):
 
 # Только точный поиск - слово в тексте пункта чеклиста 
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_get_all_notes_9(service_client, auth_header):
+async def test_get_all_notes_10(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
@@ -222,7 +248,7 @@ async def test_get_all_notes_9(service_client, auth_header):
 # =============
 
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_get_all_notes_10(service_client, auth_header):
+async def test_get_all_notes_11(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 

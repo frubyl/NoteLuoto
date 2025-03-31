@@ -263,18 +263,20 @@ namespace nl::db::sql {
         LEFT JOIN noteluoto.checklist_items ci ON cl.id = ci.checklist_id
         WHERE n.user_id = $1
         AND (
-            -- Полнотекстовый поиск по заметке
-            to_tsvector('english', n.title || ' ' || n.body) @@ plainto_tsquery('english', $2)
+            -- Поиск по заметке (русский и английский)
+            to_tsvector('russian', n.title || ' ' || n.body) @@ plainto_tsquery('russian', $2)
+            OR to_tsvector('english', n.title || ' ' || n.body) @@ plainto_tsquery('english', $2)
             
-            -- ИЛИ поиск по чеклистам
+            -- ИЛИ поиск по чеклистам (русский и английский)
             OR (
-                to_tsvector('english', cl.title) @@ plainto_tsquery('english', $2)
+                to_tsvector('russian', cl.title) @@ plainto_tsquery('russian', $2)
+                OR to_tsvector('english', cl.title) @@ plainto_tsquery('english', $2)
+                OR to_tsvector('russian', ci.text) @@ plainto_tsquery('russian', $2)
                 OR to_tsvector('english', ci.text) @@ plainto_tsquery('english', $2)
             )
         )
         ORDER BY n.updated_at DESC;
         )~"};
-
   // Поиск заметок по тегам
   inline constexpr std::string_view kFilterByTags{
     R"~(WITH filtered_notes AS (

@@ -25,7 +25,7 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
   // Проверка на наличие токена 
   const auto token_pos = auth_value.find(' ');
   if (token_pos == std::string::npos ||
-      std::string_view{auth_value.data(), token_pos} != "Token") {
+      std::string_view{auth_value.data(), token_pos} != "Bearer") {
     return AuthCheckResult{
         AuthCheckResult::Status::kTokenNotFound,
         {},
