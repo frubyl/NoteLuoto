@@ -949,9 +949,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  query_id:
-                    minimum: 1
-                    type: integer
                   answer:
                     minLength: 1
                     maxLength: 4096
