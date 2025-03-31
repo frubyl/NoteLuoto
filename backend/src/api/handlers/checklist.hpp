@@ -8,6 +8,8 @@
 #include <userver/server/handlers/http_handler_json_base.hpp>
 #include <userver/storages/postgres/postgres_fwd.hpp>
 #include <userver/storages/secdist/component.hpp>
+#include "../../utils/data_to_text_formatter.hpp"
+#include "../../grpc_clients/grpc_sync_client.hpp"
 
 namespace nl::handlers::api::checklist {
 
@@ -26,6 +28,9 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  utils::DataToTextFormatter dataToTextFormatter_;
+  grpc::clients::NoteSyncClient& client_; 
+
 };
 }// namespace note::post
 
@@ -62,6 +67,12 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  utils::DataToTextFormatter dataToTextFormatter_;
+  grpc::clients::NoteSyncClient& client_; 
+
+  int32_t getNoteId(int32_t checklist_id) const;
+
+
 };
 } // namespace del
 
@@ -81,6 +92,12 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  utils::DataToTextFormatter dataToTextFormatter_;
+  grpc::clients::NoteSyncClient& client_; 
+
+  int32_t getNoteId(int32_t checklist_id) const;
+
+
 };
 } // namespace patch
 

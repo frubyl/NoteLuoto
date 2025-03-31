@@ -244,7 +244,18 @@ namespace nl::db::sql {
             FROM noteluoto.attachments 
             WHERE note_id = $1;
             )~"};
-
+    inline constexpr std::string_view kGetNoteIdByChecklistId{
+        R"~(SELECT note_id
+            FROM noteluoto.checklists
+            WHERE id = $1;
+            )~"};
+    inline constexpr std::string_view kGetNoteIdByItemId{
+        R"~(SELECT n.id AS note_id
+            FROM noteluoto.notes n
+            JOIN noteluoto.checklists c ON n.id = c.note_id
+            JOIN noteluoto.checklist_items ci ON c.id = ci.checklist_id
+            WHERE ci.id = $1;
+            )~"};
   // Поиск заметок по пользователю и запросу 
   inline constexpr std::string_view kGetAllUserNotesWithQuery{
     R"~(SELECT DISTINCT n.id, n.updated_at

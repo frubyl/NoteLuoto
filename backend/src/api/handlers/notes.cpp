@@ -34,12 +34,16 @@ namespace nl::handlers::api::get::notes{
     }  
     
     userver::formats::json::Value Handler::buildResponsebody(std::vector<models::NoteWithId>& findNotes) const {
-        userver::formats::json::ValueBuilder response_body = userver::formats::common::Type::kArray;  
+        userver::formats::json::ValueBuilder response_body;
+        response_body["total_count"] = findNotes.size();
+        response_body["notes"] = userver::formats::common::Type::kArray;  
 
         for (const auto& note : findNotes) {
-            response_body.PushBack(note);
+            response_body["notes"].PushBack(note);
         }
         return response_body.ExtractValue();
+
+       
     }
 
     

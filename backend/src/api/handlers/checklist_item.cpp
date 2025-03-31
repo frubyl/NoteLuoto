@@ -13,7 +13,9 @@ Handler::Handler(const userver::components::ComponentConfig& config,
       cluster_(context
                    .FindComponent<userver::components::Postgres>(
                        "postgres-db-1")
-                   .GetCluster()){}
+                   .GetCluster()),
+                   client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
+                   dataToTextFormatter_(config, context){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
@@ -29,7 +31,12 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
             request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);  
             return {};
         }
-
+        // Обновление 
+        auto note_id = getNoteId(item.checklist_id_);
+        std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
+        try {
+            client_.UpdateNote(note_id, noteToText); 
+        } catch(...) {}
         const auto result_create =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kCreateChecklistItem.data(), item.checklist_id_, item.text_.value());
@@ -41,6 +48,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);  
         return response_body.ExtractValue();
 }    
+
+    int32_t Handler::getNoteId(int32_t checklist_id) const {
+        const auto result = 
+            cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                                db::sql::kGetNoteIdByChecklistId.data(), checklist_id);
+        return result.AsSingleRow<int32_t>();
+            }
 } // namespace post
 
 namespace patch {
@@ -50,7 +64,9 @@ Handler::Handler(const userver::components::ComponentConfig& config,
       cluster_(context
                    .FindComponent<userver::components::Postgres>(
                        "postgres-db-1")
-                   .GetCluster()){}
+                   .GetCluster()) ,
+                   client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
+                   dataToTextFormatter_(config, context){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
@@ -78,9 +94,22 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
                 cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                     db::sql::kUpdateCheckListItemStatus.data(), item.status_.value(), item.item_id_);
         }
+
+        // Обновление 
+        auto note_id = getNoteId(item.item_id_);
+        std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
+        try {
+            client_.UpdateNote(note_id, noteToText); 
+        } catch(...) {}
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
+int32_t Handler::getNoteId(int32_t item_id) const {
+    const auto result = 
+        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                            db::sql::kGetNoteIdByItemId.data(), item_id);
+    return result.AsSingleRow<int32_t>();
+        }
 } // namespace patch
 
 namespace del {
@@ -90,7 +119,9 @@ Handler::Handler(const userver::components::ComponentConfig& config,
       cluster_(context
                    .FindComponent<userver::components::Postgres>(
                        "postgres-db-1")
-                   .GetCluster()){}
+                   .GetCluster()),
+                   client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
+                   dataToTextFormatter_(config, context){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
@@ -106,13 +137,26 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
             request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);  
             return {};
         }
+          // Обновление 
+          auto note_id = getNoteId(item.item_id_);
+          std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
+          try {
+              client_.UpdateNote(note_id, noteToText); 
+          } catch(...) {}
         const auto result =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kDeleteChecklistItem.data(), item.item_id_);
 
+      
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
+int32_t Handler::getNoteId(int32_t item_id) const {
+    const auto result = 
+        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                            db::sql::kGetNoteIdByItemId.data(), item_id);
+    return result.AsSingleRow<int32_t>();
+        }
 } // namespace del
 
 } // namespace nl::handlers::api::checklist::item

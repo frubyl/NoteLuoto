@@ -15,7 +15,8 @@ async def test_get_all_notes_2(service_client, auth_header):
                                                   "searchType": "none",
                                                   "tags": "tag3"},
                                         headers=auth_header)
-    expected = [
+    expected = {"total_count": 1, 
+                 "notes": [
                 {
                     "note_id": 6,
                     "title": "title",
@@ -23,7 +24,8 @@ async def test_get_all_notes_2(service_client, auth_header):
                     "created_at": "2025-03-10T07:00:00+00:00",
                     "updated_at": "2025-03-10T07:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -41,8 +43,12 @@ async def test_get_all_notes_3(service_client, auth_header):
                                                   "tags": "doesntExist"},
                                         headers=auth_header)
 
+    expected = {
+                "total_count": 0, 
+                "notes": []
+    }
     assert response.status == 200
-    assert response.json() == []
+    assert response.json() == expected
 
 
 # Только по тегам - один тег - есть заметки
@@ -54,7 +60,9 @@ async def test_get_all_notes_4(service_client, auth_header):
                                                   "searchType": "none",
                                                   "tags": "tag3"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count": 3, 
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -76,7 +84,8 @@ async def test_get_all_notes_4(service_client, auth_header):
                     "created_at": "2025-03-10T07:00:00+00:00",
                     "updated_at": "2025-03-10T07:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -89,7 +98,9 @@ async def test_get_all_notes_5(service_client, auth_header):
                                                   "searchType": "none",
                                                   "tags": ["tag3", "tag2"]},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -97,7 +108,8 @@ async def test_get_all_notes_5(service_client, auth_header):
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -116,7 +128,9 @@ async def test_get_all_notes_6(service_client, auth_header):
                                                   "searchType": "exact",
                                                   "query": "title4"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -124,7 +138,8 @@ async def test_get_all_notes_6(service_client, auth_header):
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -139,15 +154,17 @@ async def test_get_all_notes_7(service_client, auth_header):
                                                   "searchType": "exact",
                                                   "query": "body4"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
                     "body": "body4",
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
-                }
-    ]
+                }]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -160,7 +177,9 @@ async def test_get_all_notes_8(service_client, auth_header):
                                                   "searchType": "exact",
                                                   "query": "checklistTitle"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -168,7 +187,8 @@ async def test_get_all_notes_8(service_client, auth_header):
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -181,7 +201,9 @@ async def test_get_all_notes_9(service_client, auth_header):
                                                   "searchType": "exact",
                                                   "query": "checklistItem1"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -189,7 +211,8 @@ async def test_get_all_notes_9(service_client, auth_header):
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
@@ -207,7 +230,9 @@ async def test_get_all_notes_10(service_client, auth_header):
                                                   "tags": "tag3", 
                                                   "query": "checklistItem1"},
                                         headers=auth_header)
-    expected = [
+    expected = {
+                "total_count" : 1,
+                "notes": [
                 {
                     "note_id": 4,
                     "title": "title4",
@@ -215,7 +240,8 @@ async def test_get_all_notes_10(service_client, auth_header):
                     "created_at": "2025-03-10T09:00:00+00:00",
                     "updated_at": "2025-03-10T09:00:00+00:00"
                 }
-    ]
+                ]
+    }
     assert response.status == 200
     assert response.json() == expected
 
