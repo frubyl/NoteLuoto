@@ -29,9 +29,9 @@ private:
         nl::grpc::clients::LangchainClient& langchainClient_;
         const userver::storages::postgres::ClusterPtr cluster_;
 
-        userver::formats::json::Value buildResponsebody(int32_t query_id, std::string& answer) const;
+        userver::formats::json::Value buildResponsebody(std::string& answer) const;
         // Возвращает id запроса 
-        int32_t addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const; 
+        void addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const; 
 
 };
 }  // namespace nl::handlers::api::ai::answer 

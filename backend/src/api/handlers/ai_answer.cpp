@@ -29,24 +29,20 @@ namespace nl::handlers::api::ai::answer {
 
         auto answer = langchainClient_.GenerateAnswer(query);
 
-        int32_t query_id = addQueryAndAnswerToHistory(user_id, query, answer);
+        addQueryAndAnswerToHistory(user_id, query, answer);
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
-        return buildResponsebody(query_id, answer);
+        return buildResponsebody(answer);
         
     }
 
-    int32_t Handler::addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const {
+    void Handler::addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const {
         const auto result = cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
             db::sql::kInsertAiHistory.data(), user_id, query, answer);
-        const auto result_set = result.AsSetOf<int32_t>();
-        int32_t note_id = *(result_set.begin());
-        return note_id;
     }
     
 
-    userver::formats::json::Value Handler::buildResponsebody(int32_t query_id, std::string& answer) const {
+    userver::formats::json::Value Handler::buildResponsebody(std::string& answer) const {
         userver::formats::json::ValueBuilder response_body;
-        response_body["query_id"] = query_id;
         response_body["answer"] = answer;
         return response_body.ExtractValue();
     }

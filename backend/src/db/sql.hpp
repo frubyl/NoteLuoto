@@ -25,8 +25,7 @@ namespace nl::db::sql {
     inline constexpr std::string_view kInsertAiHistory{
             R"~(
                 INSERT INTO noteluoto.ai_history (user_id, query, response)
-                VALUES ($1, $2, $3)
-                RETURNING id;
+                VALUES ($1, $2, $3);
             )~"};
     // Создание заметки
     inline constexpr std::string_view kCreateNote{
