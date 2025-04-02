@@ -16,7 +16,7 @@ class FilenameGenerator  {
 public:
 static std::string GenerateRandomFilename(const std::string& filename);
 
-private:
+protected:
 static std::string GetFileExtension(const std::string& filename);
 };
 

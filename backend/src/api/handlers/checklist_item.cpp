@@ -15,7 +15,7 @@ Handler::Handler(const userver::components::ComponentConfig& config,
                        "postgres-db-1")
                    .GetCluster()),
                    client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
-                   dataToTextFormatter_(config, context){}
+                   dataToTextFormatter_(cluster_){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
@@ -66,7 +66,7 @@ Handler::Handler(const userver::components::ComponentConfig& config,
                        "postgres-db-1")
                    .GetCluster()) ,
                    client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
-                   dataToTextFormatter_(config, context){}
+                   dataToTextFormatter_(cluster_){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
@@ -121,7 +121,7 @@ Handler::Handler(const userver::components::ComponentConfig& config,
                        "postgres-db-1")
                    .GetCluster()),
                    client_(context.FindComponent<grpc::clients::NoteSyncClient>()),
-                   dataToTextFormatter_(config, context){}
+                   dataToTextFormatter_(cluster_){}
 
 userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,

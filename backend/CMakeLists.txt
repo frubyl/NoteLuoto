@@ -164,7 +164,8 @@ target_link_libraries(${PROJECT_NAME}_objs PUBLIC ${PROJECT_NAME}-proto)
 add_executable(${PROJECT_NAME}_unittest
     src/unit-tests/jwt_test.cpp
     src/unit-tests/bcrypt_test.cpp
-
+    src/unit-tests/filename_generator_test.cpp
+    src/unit-tests/filemanager_test.cpp
 )
 
 # Линковка библиотеки юнит тетсов 

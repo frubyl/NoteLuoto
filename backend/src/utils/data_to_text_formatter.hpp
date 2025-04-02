@@ -13,8 +13,7 @@
 namespace nl::utils {
     class DataToTextFormatter {
         public:
-            DataToTextFormatter(const userver::components::ComponentConfig& config,
-            const userver::components::ComponentContext& context);
+            DataToTextFormatter(userver::storages::postgres::ClusterPtr cluster);
 
             std::string FormatNote(const int32_t noteId) const;
 

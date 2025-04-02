@@ -10,11 +10,7 @@
 #include <ctime>
 
 namespace nl::utils {
-    DataToTextFormatter::DataToTextFormatter(const userver::components::ComponentConfig& config,
-        const userver::components::ComponentContext& context) : cluster_(context
-            .FindComponent<userver::components::Postgres>(
-                "postgres-db-1")
-            .GetCluster()) {}
+    DataToTextFormatter::DataToTextFormatter(userver::storages::postgres::ClusterPtr cluster) : cluster_ (cluster) {}
 
 
     std::string DataToTextFormatter::FormatNote(const int32_t noteId) const {

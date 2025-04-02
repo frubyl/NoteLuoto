@@ -3,7 +3,7 @@ CMAKE_DEBUG_FLAGS ?= -DUSERVER_SANITIZE='addr ub'
 CMAKE_RELEASE_FLAGS ?=
 NPROCS ?= $(shell nproc)
 CLANG_FORMAT ?= clang-format
-DOCKER_COMPOSE ?= docker-compose
+DOCKER_COMPOSE ?= docker-compose 
 
 # NOTE: use Makefile.local to override the options defined above.
 -include Makefile.local
@@ -13,8 +13,6 @@ CMAKE_RELEASE_FLAGS += -DCMAKE_BUILD_TYPE=Release $(CMAKE_COMMON_FLAGS)
 
 .PHONY: all
 all: test-debug test-release
-
-
 
 # Run cmake
 .PHONY: cmake-debug

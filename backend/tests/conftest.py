@@ -5,12 +5,35 @@ from testsuite.databases.pgsql import discover
 
 
 import grpc
-from samples import SyncService_pb2, SyncService_pb2_grpc
-from samples import Langchain_pb2, Langchain_pb2_grpc
-from samples import TagRecommender_pb2, TagRecommender_pb2_grpc
-
+import samples.Langchain_pb2_grpc as langchain_services
+USERVER_CONFIG_HOOKS = ['prepare_service_config']
 
 pytest_plugins = ['pytest_userver.plugins.postgresql', 'pytest_userver.plugins.core', 'pytest_userver.plugins.grpc']
+
+@pytest.fixture(scope='session')
+def mock_grpc_langchain_session(grpc_mockserver, create_grpc_mock):
+    """Фикстура для мокирования LangChain gRPC сервиса"""
+    mock = create_grpc_mock(langchain_services.LangChainServicer)
+    langchain_services.add_LangChainServicer_to_server(
+        mock.servicer, grpc_mockserver,
+    )
+    return mock
+
+@pytest.fixture
+def mock_grpc_langchain(mock_grpc_langchain_session):
+    """Фикстура для мока на уровне теста"""
+    with mock_grpc_langchain_session.mock() as mock:
+        yield mock
+
+@pytest.fixture(scope='session')
+def prepare_service_config(grpc_mockserver_endpoint):
+    """Подмена endpoint в конфиге сервиса"""
+    def patch_config(config, config_vars):
+        components = config['components_manager']['components']
+        components['langchain-client']['endpoint'] = grpc_mockserver_endpoint
+    return patch_config
+
+
 @pytest.fixture
 def form_data(load_binary):
     form_data = aiohttp.FormData()

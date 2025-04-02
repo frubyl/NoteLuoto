@@ -19,11 +19,11 @@ namespace nl::handlers::api::suggest {
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
-
+     
         auto suggestions = langchainClient_.RecommendPrompts();
-
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return buildResponsebody(suggestions);
+     
         
     }
 
@@ -57,9 +57,10 @@ namespace nl::handlers::api::suggest {
                 auto existingTags = getNoteTags(note_id);
 
                 auto suggestions = tagRecommenderClient_.RecommendTags(note_id, existingTags);
-        
                 request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
                 return buildResponsebody(suggestions);
+                
+  
                 
             }
 
