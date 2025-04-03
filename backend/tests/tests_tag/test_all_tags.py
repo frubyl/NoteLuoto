@@ -4,6 +4,7 @@ from testsuite.databases import pgsql
 
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_all_tags(service_client, auth_header):
+    """Тест проверяет получение всех тегов которые существует"""
     response = await service_client.get("/tags/all",
                                          headers = auth_header)
     expected = [
@@ -24,5 +25,13 @@ async def test_all_tags(service_client, auth_header):
     assert response.json() == expected
 
 
+async def test_all_tags_empty_answer(service_client, auth_header):
+    """Тест проверяет получение пустого ответа"""
+    response = await service_client.get("/tags/all",
+                                         headers = auth_header)
+    expected = [
+    ]
+    assert response.status == 200
+    assert response.json() == expected
 
 

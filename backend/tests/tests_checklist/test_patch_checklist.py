@@ -1,18 +1,18 @@
 import pytest
 from testsuite.databases import pgsql
 
-# Нет заметки
-async def test_patch_checklist_1(service_client, auth_header):
+async def test_update_nonexistent_checklist(service_client, auth_header):
+    """Тест проверяет обновление несуществующего чеклиста"""
     response = await service_client.patch("/checklist/99",
                                         json = {"title": "title"},
-                                         headers = auth_header)
+                                        headers = auth_header)
+
     assert response.status == 404
-# Все ок
+
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_patch_checklist_2(service_client, auth_header):
+async def test_update_checklist_success(service_client, auth_header):
+    """Тест проверяет успешное обновление существующего чеклиста"""
     response = await service_client.patch("/checklist/1",
                                         json = {"title": "new"},
-                                         headers = auth_header)
+                                        headers = auth_header)
     assert response.status == 200
-
-    

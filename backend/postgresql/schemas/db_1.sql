@@ -29,20 +29,20 @@ CREATE TABLE IF NOT EXISTS noteluoto.notes (
   body TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  user_id SERIAL NOT NULL,
+  user_id INTEGER NOT NULL,
   CONSTRAINT fk_notes_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
 
 CREATE TABLE IF NOT EXISTS noteluoto.tags (
   id SERIAL PRIMARY KEY,
-  user_id SERIAL NOT NULL,
+  user_id INTEGER NOT NULL,
   name VARCHAR(50) UNIQUE NOT NULL,
   CONSTRAINT fk_tags_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
 
 CREATE TABLE IF NOT EXISTS noteluoto.note_tags (
-  note_id SERIAL NOT NULL,
-  tag_id SERIAL NOT NULL,
+  note_id INTEGER NOT NULL,
+  tag_id INTEGER NOT NULL,
   -- Гарантирует, что заметка не будет связана с одним и тем же тегом несколько раз
   CONSTRAINT pk_note_tags PRIMARY KEY (note_id, tag_id),
   CONSTRAINT fk_note_tags_note FOREIGN KEY (note_id) REFERENCES noteluoto.notes (id),
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS noteluoto.note_tags (
 CREATE TABLE IF NOT EXISTS noteluoto.checklists (
   id SERIAL PRIMARY KEY,
   title VARCHAR(256) NOT NULL,
-  note_id SERIAL NOT NULL,
+  note_id INTEGER NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_checklists_note FOREIGN KEY (note_id) REFERENCES noteluoto.notes (id)
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS noteluoto.checklist_items (
   id SERIAL PRIMARY KEY,
   text VARCHAR(512) NOT NULL,
   completed BOOLEAN NOT NULL DEFAULT FALSE,
-  checklist_id SERIAL NOT NULL,
+  checklist_id INTEGER NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_checklist_items_checklist FOREIGN KEY (checklist_id) REFERENCES noteluoto.checklists (id)
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS noteluoto.attachments (
   id SERIAL PRIMARY KEY,
   file_name VARCHAR(2048) NOT NULL,
   old_file_name VARCHAR(2048) NOT NULL,
-  note_id SERIAL NOT NULL,
+  note_id INTEGER NOT NULL,
   CONSTRAINT fk_attachments_note FOREIGN KEY (note_id) REFERENCES noteluoto.notes (id)
 );
 
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS noteluoto.ai_history (
   query TEXT NOT NULL,
   response TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  user_id SERIAL NOT NULL,
+  user_id INTEGER NOT NULL,
   CONSTRAINT fk_ai_history_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
 

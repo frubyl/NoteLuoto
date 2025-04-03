@@ -1,39 +1,41 @@
 import pytest
 from testsuite.databases import pgsql
 
-# Нет айтема
-async def test_checklist_patch_item_1(service_client, auth_header):
-    response = await service_client.patch("/checklist/item/99",
-                                        json = {"text": "text",
-                                                "status": True},
-                                         headers = auth_header)
+async def test_update_nonexistent_item(service_client, auth_header):
+    """Тест проверяет обновление несуществующего элемента чеклиста"""
+    response = await service_client.patch(
+        "/checklist/item/99",
+        json={"text": "text", "status": True},
+        headers=auth_header
+    )
     assert response.status == 404
 
-# Обновляется только тело
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_checklist_patch_item_2(service_client, auth_header):
-    response = await service_client.patch("/checklist/item/1",
-                                        json = {"text": "text"},
-                                         headers = auth_header)
+async def test_update_item_text_only(service_client, auth_header):
+    """Тест проверяет обновление только текста элемента"""
+    response = await service_client.patch(
+        "/checklist/item/1",
+        json={"text": "text"},
+        headers=auth_header
+    )
     assert response.status == 200
 
-    
-# Обновляется только статус
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_checklist_patch_item_3(service_client, auth_header):
-    response = await service_client.patch("/checklist/item/1",
-                                        json = {"status": True},
-                                         headers = auth_header)
+async def test_update_item_status_only(service_client, auth_header):
+    """Тест проверяет обновление только статуса элемента"""
+    response = await service_client.patch(
+        "/checklist/item/1",
+        json={"status": True},
+        headers=auth_header
+    )
     assert response.status == 200
 
-    
-# Обновляется только тело и статус
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_checklist_patch_item_4(service_client, auth_header):
-    response = await service_client.patch("/checklist/item/1",
-                                        json = {"text": "text",
-                                                "status": True},
-                                         headers = auth_header)
+async def test_update_item_text_and_status(service_client, auth_header):
+    """Тест проверяет обновление и текста, и статуса элемента"""
+    response = await service_client.patch(
+        "/checklist/item/1",
+        json={"text": "text", "status": True},
+        headers=auth_header
+    )
     assert response.status == 200
-
-    

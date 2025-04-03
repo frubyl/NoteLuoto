@@ -2,16 +2,16 @@ import pytest
 from testsuite.databases import pgsql
 
 
-# Нет заметки
-async def test_note_tags_1(service_client, auth_header):
+async def test_get_note_tags_note_doesnt_exist(service_client, auth_header):
+    """Тест проверяет получение тегов у несуществующей заметки"""
     response = await service_client.get("/tags/1",
                                          headers = auth_header)
     assert response.status == 404
 
 
-# Получение всех тегов
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_note_tags_2(service_client, auth_header):
+async def test_get_note_tags_success(service_client, auth_header):
+    """Тест проверяет успешное получение тегов"""
     response = await service_client.get("/tags/1",
                                          headers = auth_header)
     expected = [
