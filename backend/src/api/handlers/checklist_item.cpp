@@ -21,8 +21,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
-        auto item = dto::ParseItemRequest(request);
-
+        dto::ItemRequest item;
+        try {
+            item = dto::ParseItemRequest(request);
+        } catch(std::exception& ex) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+            return buildErrorMessage(ex.what());
+        }        
         const auto result_find =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kGetChecklist.data(), item.checklist_id_);
@@ -36,14 +41,15 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
         try {
             client_.UpdateNote(note_id, noteToText); 
-        } catch(...) {}
+        } catch(...) {
+            LOG_ERROR() << "Failed to send request to AI service";
+        }
         const auto result_create =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                                db::sql::kCreateChecklistItem.data(), item.checklist_id_, item.text_.value());
+                                db::sql::kCreateChecklistItem.data(), item.checklist_id_, item.text_);
 
         userver::formats::json::ValueBuilder response_body;
-        const auto result_set = result_create.AsSetOf<int32_t>();
-        int32_t item_id = *(result_set.begin());
+        int32_t item_id = result_create.AsSingleRow<int32_t>();
         response_body["item_id"] = item_id;  
         request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);  
         return response_body.ExtractValue();
@@ -55,6 +61,11 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
                                 db::sql::kGetNoteIdByChecklistId.data(), checklist_id);
         return result.AsSingleRow<int32_t>();
             }
+    userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["message"] = message;
+        return response_body.ExtractValue();
+        }  
 } // namespace post
 
 namespace patch {
@@ -72,8 +83,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
-        auto item = dto::ParseItemRequest(request);
-
+        dto::ItemRequest item;
+        try {
+            item = dto::ParseItemRequest(request);
+        } catch(std::exception& ex) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+            return buildErrorMessage(ex.what());
+        }    
         const auto result_find =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kGetChecklistItem.data(), item.item_id_);
@@ -83,10 +99,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
             return {};
         }
 
-        if (item.text_) {
+        if (item.text_ != "") {
             const auto result = 
                 cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                    db::sql::kUpdateCheckListItemText.data(), item.text_.value(), item.item_id_);
+                    db::sql::kUpdateCheckListItemText.data(), item.text_, item.item_id_);
         }
 
         if (item.status_) {
@@ -100,16 +116,24 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
         try {
             client_.UpdateNote(note_id, noteToText); 
-        } catch(...) {}
+        } catch(...) {
+            LOG_ERROR() << "Failed to send request to AI service";
+
+        }
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
-int32_t Handler::getNoteId(int32_t item_id) const {
-    const auto result = 
-        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                            db::sql::kGetNoteIdByItemId.data(), item_id);
-    return result.AsSingleRow<int32_t>();
-        }
+    int32_t Handler::getNoteId(int32_t item_id) const {
+        const auto result = 
+            cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                                db::sql::kGetNoteIdByItemId.data(), item_id);
+        return result.AsSingleRow<int32_t>();
+    }
+    userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["message"] = message;
+        return response_body.ExtractValue();
+        }  
 } // namespace patch
 
 namespace del {
@@ -127,8 +151,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
-        auto item = dto::ParseItemRequest(request);
-
+        dto::ItemRequest item;
+        try {
+            item = dto::ParseItemRequest(request);
+        } catch(std::exception& ex) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+            return buildErrorMessage(ex.what());
+        }    
         const auto result_find =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kGetChecklistItem.data(), item.item_id_);
@@ -142,7 +171,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
           std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
           try {
               client_.UpdateNote(note_id, noteToText); 
-          } catch(...) {}
+          } catch(...) {
+            LOG_ERROR() << "Failed to send request to AI service";
+
+          }
         const auto result =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kDeleteChecklistItem.data(), item.item_id_);
@@ -151,12 +183,17 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
-int32_t Handler::getNoteId(int32_t item_id) const {
-    const auto result = 
-        cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                            db::sql::kGetNoteIdByItemId.data(), item_id);
-    return result.AsSingleRow<int32_t>();
-        }
+    int32_t Handler::getNoteId(int32_t item_id) const {
+        const auto result = 
+            cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                                db::sql::kGetNoteIdByItemId.data(), item_id);
+        return result.AsSingleRow<int32_t>();
+            }
+    userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["message"] = message;
+        return response_body.ExtractValue();
+        }  
 } // namespace del
 
 } // namespace nl::handlers::api::checklist::item

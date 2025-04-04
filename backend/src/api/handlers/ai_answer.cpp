@@ -26,6 +26,10 @@ namespace nl::handlers::api::ai::answer {
 
         auto request_body = userver::formats::json::FromString(request.RequestBody());
         auto query =  request_body["question"].As<std::string>();
+        if (query.size() < 1 || query.size() > 4096) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+            return buildErrorMessage("Question size error: max lenght exeded or empty question");
+        }
 
         auto answer = langchainClient_.GenerateAnswer(query);
 
@@ -47,5 +51,9 @@ namespace nl::handlers::api::ai::answer {
         return response_body.ExtractValue();
     }
 
-
+    userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["message"] = message;
+        return response_body.ExtractValue();
+      } 
 }  // namespace nl::handlers::api::ai::answer

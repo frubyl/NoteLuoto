@@ -22,9 +22,14 @@ namespace nl::handlers::api::get::notes{
         const userver::server::http::HttpRequest& request,
         const userver::formats::json::Value& request_json,
         userver::server::request::RequestContext& context) const  {
-
-
-        auto searchParams = dto::ParseSearchParams(request, context);
+        
+        dto::SearchParams searchParams;
+        try {
+            searchParams = dto::ParseSearchParams(request, context);
+        } catch(std::exception& ex) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+            return buildErrorMessage(ex.what());
+        }
         auto strategy = searchService_.CreateStrategy(searchParams.searchType, langchainClient_);
         auto findNotes = strategy->find(searchParams);
 
@@ -45,7 +50,11 @@ namespace nl::handlers::api::get::notes{
 
        
     }
-
+    userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+        userver::formats::json::ValueBuilder response_body;
+        response_body["message"] = message;
+        return response_body.ExtractValue();
+      }   
     
 } // namespace nl::handlers::api::get::notes
 

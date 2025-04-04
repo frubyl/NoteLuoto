@@ -53,6 +53,7 @@ namespace tags {
 
                 std::vector<std::string> getNoteTags(int64_t note_id) const;
                 userver::formats::json::Value buildResponsebody(std::vector<std::string>& suggestions) const;
+                userver::formats::json::Value buildErrorMessage(std::string message) const; 
 
 };
 } // namespace tags

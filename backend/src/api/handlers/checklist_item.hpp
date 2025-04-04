@@ -32,6 +32,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
   grpc::clients::NoteSyncClient& client_; 
 
   int32_t getNoteId(int32_t checklist_id) const;
+  userver::formats::json::Value buildErrorMessage(std::string message) const;
 
 
 };
@@ -56,6 +57,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
   grpc::clients::NoteSyncClient& client_; 
 
   int32_t getNoteId(int32_t checklist_id) const;
+  userver::formats::json::Value buildErrorMessage(std::string message) const;
 
 };
 } // namespace patch 
@@ -79,6 +81,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
   grpc::clients::NoteSyncClient& client_; 
 
   int32_t getNoteId(int32_t checklist_id) const;
+  userver::formats::json::Value buildErrorMessage(std::string message) const;
 
 };
 } // namespace del 

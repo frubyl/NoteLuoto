@@ -3,6 +3,7 @@
 #include "../../models/user.hpp"
 #include "../../db/sql.hpp"
 #include <bcrypt.h>
+#include <regex>
 #include <userver/storages/postgres/cluster.hpp>
 #include <userver/storages/postgres/component.hpp>
 #include <userver/storages/postgres/io/row_types.hpp>
@@ -24,9 +25,17 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::formats::json::Value&,
     userver::server::request::RequestContext&) const  {
   
-    auto userAuthRequest = dto::ParseAuthRequest(request);
-
-
+  dto::UserAuthRequest userAuthRequest;
+  try {
+    userAuthRequest = dto::ParseAuthRequest(request);
+  } catch(...) {
+    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+    return buildErrorMessage("Invalid json");
+  }
+  if (!validateUserData(userAuthRequest.username_, userAuthRequest.password_)) {
+    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+    return buildErrorMessage("Data does not match format");
+  }
   // Поиск пользователя по username в базе данных
   const auto result =
       cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
@@ -52,4 +61,29 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
   request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
   return builder.ExtractValue();
 }
+
+userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+  userver::formats::json::ValueBuilder response_body;
+  response_body["message"] = message;
+  return response_body.ExtractValue();
+} 
+
+
+bool Handler::validateUserData(std::string& username, std::string& password) const {
+  bool isValidPassword = validatePassword(password);
+  bool isValidUsername = validateUsername(username);
+  return isValidPassword && isValidUsername;
+
+}
+
+bool Handler::validatePassword(std::string& password) const {
+  std::regex pattern("^(?=.*\\d)(?=.*[a-z]).{8,32}$");
+  return std::regex_match(password, pattern);
+}
+
+bool Handler::validateUsername(std::string& username) const {
+  std::regex pattern("^[A-Za-z0-9_-]{3,30}$");
+  return std::regex_match(username, pattern);
+}
+
 } // namespace nl::handlers::api::login::post

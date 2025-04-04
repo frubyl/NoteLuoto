@@ -11,7 +11,7 @@ namespace nl::dto {
 struct ItemRequest final {
     int32_t item_id_;
     int32_t checklist_id_;
-    std::optional<std::string> text_;
+    std::string text_;
     std::optional<bool> status_;
 };
 

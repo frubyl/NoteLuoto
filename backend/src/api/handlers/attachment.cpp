@@ -25,7 +25,20 @@ std::string Handler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& context) const {
 
-    auto attachment_request = dto::ParseAttachmentRequest(request);
+    dto::AttachmentRequest attachment_request;
+    try {
+        attachment_request = dto::ParseAttachmentRequest(request);
+    } catch(std::exception& ex) {
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+        return buildErrorMessage(ex.what());
+    }
+
+    if(attachment_request.file_.value.size() > 524288000 || attachment_request.file_.value.size() == 0) {
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+        return buildErrorMessage("Error file size: exeded or empty");
+    }
+    
+
     auto note_id = attachment_request.note_id_;
     const auto result_search =
         cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kGetNote.data(), note_id);
@@ -41,21 +54,24 @@ std::string Handler::HandleRequestThrow(
         newFileName = utils::FileManager::SaveFile(attachment_request.file_);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
-        return {};  
+        return buildErrorMessage("Filesystem error");
     }
     auto fileName = attachment_request.file_.filename ? attachment_request.file_.filename.value() : "";
     const auto result_add =
         cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kAddAttachmentToNode.data(), newFileName, fileName, note_id);
     
-    const auto result_set = result_add.AsSetOf<int32_t>();
-    int32_t attachment_id = *(result_set.begin());
     userver::formats::json::ValueBuilder response_body;
-    response_body["attchment_id"] = attachment_id;
+    response_body["attchment_id"] = result_add.AsSingleRow<int32_t>();
 
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
     return ToString(response_body.ExtractValue());
 }
-
+std::string Handler::buildErrorMessage(std::string message) const {
+    userver::formats::json::ValueBuilder response_body;
+    response_body["message"] = message;
+    return ToString(response_body.ExtractValue());
+  } 
+  
 } // namespace post
 
 namespace get {
@@ -70,7 +86,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const {
 
-    auto attachment_request = dto::ParseAttachmentRequest(request);
+    dto::AttachmentRequest attachment_request;
+    try {
+        attachment_request = dto::ParseAttachmentRequest(request);
+    } catch(std::exception& ex) {
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+        return buildErrorMessage(ex.what());
+    }
     const auto result =
         cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kGetAttachmentNames.data(), attachment_request.attachment_id_);
     if (result.IsEmpty()) {
@@ -84,7 +106,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         content = utils::FileManager::ReadFile(attachment.file_name_);
     } catch (...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
-        return {};  
+        return buildErrorMessage("Filesystem error");
     }
 
     userver::formats::json::ValueBuilder response_body;
@@ -93,7 +115,11 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
     return response_body.ExtractValue();
 }
-
+userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+    userver::formats::json::ValueBuilder response_body;
+    response_body["message"] = message;
+    return response_body.ExtractValue();
+  } 
 } // namespace get
 
 namespace del {
@@ -108,7 +134,13 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const {
 
-    auto attachment_request = dto::ParseAttachmentRequest(request);
+    dto::AttachmentRequest attachment_request;
+    try {
+        attachment_request = dto::ParseAttachmentRequest(request);
+    } catch(std::exception& ex) {
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+        return buildErrorMessage(ex.what());
+    }
     const auto result =
         cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kGetAttachmentNames.data(), attachment_request.attachment_id_);
     if (result.IsEmpty()) {
@@ -121,7 +153,7 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         utils::FileManager::DeleteFile(attachment.file_name_);
     } catch(...) {
         request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);  
-        return {};  
+        return buildErrorMessage("Filesystem error");
     }
 
     const auto result_delete =
@@ -129,7 +161,11 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
     return {};
 }
-
+userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+    userver::formats::json::ValueBuilder response_body;
+    response_body["message"] = message;
+    return response_body.ExtractValue();
+  } 
 } // namespace del
 
 } // namespace nl::handlers::api::attachment

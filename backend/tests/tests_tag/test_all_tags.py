@@ -35,3 +35,8 @@ async def test_all_tags_empty_answer(service_client, auth_header):
     assert response.json() == expected
 
 
+async def test_all_tags_invalid_token(service_client):
+    """Тест невалидный токен"""
+    response = await service_client.get("/tags/all")
+
+    assert response.status == 401

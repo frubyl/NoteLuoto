@@ -10,8 +10,8 @@ namespace nl::dto {
 
 struct HistoryRequest final {
     int32_t user_id_;
-    int32_t page_;
-    int32_t limit_;
+    int32_t page_ = 1;
+    int32_t limit_ = 20;
 
 };
 

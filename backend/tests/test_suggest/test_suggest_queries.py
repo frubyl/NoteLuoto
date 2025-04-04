@@ -55,3 +55,16 @@ async def test_suggest_queries_grpc_error(service_client, mock_grpc_langchain, a
     assert 'Internal Server Error' in response.json()['message']
     assert mock_recommend_prompts.times_called == 1
 
+
+async def test_suggest_queries_invalid_token(service_client, mock_grpc_langchain):
+    """Тест неверного токена"""
+    @mock_grpc_langchain('RecommendPrompts')
+    async def mock_recommend_prompts(request, context):
+        return langchain_protos.RecommendedPrompts(
+            recommended_prompts=[]
+        )
+
+    response = await service_client.get(
+        '/suggest/queries'    )
+    
+    assert response.status == 401

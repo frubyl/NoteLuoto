@@ -1,12 +1,14 @@
 INSERT INTO noteluoto.users (username, password_hash)
-VALUES ('frubyl', '$2b$10$t4Sw0JCBDfIuYywjloaHoOQQBe8TlpHQXY4K.9U.keRbM0Qrs8H.e');
+VALUES ('frubyl', '$2b$10$LIuM6TBiC8YMMWa9kvp2v.mGDLjHWyaBcZ6uKhIhESa1poB5q5YTm');
 
 
 INSERT INTO noteluoto.ai_history (query, response, user_id, created_at)
 VALUES ('First query', 'First response', 1, '2025-03-10 12:30:00'),
        ('Second query', 'Second response', 1, '2025-03-10 13:30:00'),
-       ('Third query', 'Third response', 1, '2025-03-10 14:30:00');
-
+       ('Third query', 'Third response', 1, '2025-03-10 14:30:00'),
+       ('Fourth query', 'Fourth response', 1, '2025-03-10 14:31:00'),
+       ('Fifth query', 'Fifth response', 1, '2025-03-10 14:32:00'),
+       ('Sixth query', 'Sixth response', 1, '2025-03-10 15:30:00');
 
 INSERT INTO noteluoto.notes (title, body, user_id, created_at, updated_at)
 VALUES  ('title', 'body', 1, '2025-03-10 12:30:00', '2025-03-10 12:30:00');

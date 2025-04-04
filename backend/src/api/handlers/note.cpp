@@ -24,8 +24,13 @@ namespace nl::handlers::api::note {
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
 
-            auto noteRequest = dto::ParseNoteRequest(request, context);
-
+            dto::NoteRequest noteRequest;
+            try {
+                noteRequest = dto::ParseNoteRequest(request, context);
+            } catch(std::exception& ex) {
+                request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                return buildErrorMessage(ex.what());
+            }
             const auto result =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kGetNote.data(), noteRequest.note_id_);
@@ -43,7 +48,11 @@ namespace nl::handlers::api::note {
             request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
             return response_body.ExtractValue();
         }  
-        
+        userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+            userver::formats::json::ValueBuilder response_body;
+            response_body["message"] = message;
+            return response_body.ExtractValue();
+          }   
     
        
     } // namespace get
@@ -63,8 +72,13 @@ namespace nl::handlers::api::note {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
-
-            auto noteRequest = dto::ParseNoteRequest(request, context);
+            dto::NoteRequest noteRequest;
+            try {
+                noteRequest = dto::ParseNoteRequest(request, context);
+            } catch(std::exception& ex) {
+                request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                return buildErrorMessage(ex.what());
+            }
             auto result = cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                 db::sql::kGetNote.data(), noteRequest.note_id_);
 
@@ -79,7 +93,9 @@ namespace nl::handlers::api::note {
             std::string noteToText = dataToTextFormatter_.FormatNote(noteRequest.note_id_);
             try {
                 client_.UpdateNote(noteRequest.note_id_, noteToText); 
-            } catch(...) {}
+            } catch(...) {
+                LOG_ERROR() << "Failed to send request to AI service";
+            }
             return {};
         }      
 
@@ -95,6 +111,11 @@ namespace nl::handlers::api::note {
                                         db::sql::kUpdateNoteBody.data(), noteRequest.body_, noteRequest.note_id_);
             }
         }
+        userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+            userver::formats::json::ValueBuilder response_body;
+            response_body["message"] = message;
+            return response_body.ExtractValue();
+          }   
     } // namespace patch
 
 
@@ -114,9 +135,13 @@ namespace nl::handlers::api::note {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
-
-                auto noteRequest = dto::ParseNoteRequest(request, context);
-
+                dto::NoteRequest noteRequest;
+                try {
+                    noteRequest = dto::ParseNoteRequest(request, context);
+                } catch(std::exception& ex) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                    return buildErrorMessage(ex.what());
+                }
                 // Создаем заметку
                 const auto result =
                 cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
@@ -133,10 +158,16 @@ namespace nl::handlers::api::note {
 
                 try {
                     client_.AddNote(note_id, noteToText);
-                } catch (...) {}
+                } catch (...) {
+                    LOG_ERROR() << "Failed to send request to AI service";
+                }
                 return response_body.ExtractValue();
         }   
-      
+        userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+            userver::formats::json::ValueBuilder response_body;
+            response_body["message"] = message;
+            return response_body.ExtractValue();
+          }   
     } // namespace post
 
     namespace del {
@@ -185,19 +216,24 @@ namespace nl::handlers::api::note {
         const userver::server::http::HttpRequest& request,
         const userver::formats::json::Value& request_json,
         userver::server::request::RequestContext& context) const  {
-
-            int32_t note_id = std::stoi(request.GetPathArg("note_id"));
+            dto::NoteRequest noteRequest;
+            try {
+                noteRequest = dto::ParseNoteRequest(request, context);
+            } catch(std::exception& ex) {
+                request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                return buildErrorMessage(ex.what());
+            }
 
             const auto result_get =
                     cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                                        db::sql::kGetNote.data(), note_id);
+                                        db::sql::kGetNote.data(), noteRequest.note_id_);
             if (result_get.IsEmpty()) {
                 request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);  
                 return {};
             }
             const auto result_get_attachments =
                 cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                                    db::sql::kGetAllNoteAttachments.data(), note_id);
+                                    db::sql::kGetAllNoteAttachments.data(), noteRequest.note_id_);
 
             std::vector<std::string> attachments;
             for (auto &row : result_get_attachments) {
@@ -205,13 +241,20 @@ namespace nl::handlers::api::note {
             }
 
             userver::utils::Async("Delete user attachments", deleteAttachments, attachments).Detach();
-            cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kDeleteNote.data(), note_id);
+            cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kDeleteNote.data(), noteRequest.note_id_);
             request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
             try {   
-                client_.DeleteNote(note_id);
-            } catch(...){};
+                client_.DeleteNote(noteRequest.note_id_);
+            } catch(...){
+                LOG_ERROR() << "Failed to send request to AI service";
+            };
             return {};
         }   
+        userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+            userver::formats::json::ValueBuilder response_body;
+            response_body["message"] = message;
+            return response_body.ExtractValue();
+          }  
     } // namespace del
 } // namespace nl::handlers::api::note
 

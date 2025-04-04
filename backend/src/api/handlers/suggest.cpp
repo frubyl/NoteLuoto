@@ -52,8 +52,16 @@ namespace nl::handlers::api::suggest {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
+                if (!request.HasPathArg("note_id")) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                    return buildErrorMessage("Note_id in path is empty");
+                 }
+                 auto note_id = std::stoi(request.GetPathArg("note_id"));
+                 if (note_id < 1) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
+                    return buildErrorMessage("Note_id less than 1");
+                 }
 
-                auto note_id = std::stoi(request.GetPathArg("note_id"));
                 auto existingTags = getNoteTags(note_id);
 
                 auto suggestions = tagRecommenderClient_.RecommendTags(note_id, existingTags);
@@ -85,5 +93,10 @@ namespace nl::handlers::api::suggest {
                 }
                 return response_body.ExtractValue();
             }
+            userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
+                userver::formats::json::ValueBuilder response_body;
+                response_body["message"] = message;
+                return response_body.ExtractValue();
+              }   
     } // namespace tags
 }  // namespace nl::handlers::api::suggest

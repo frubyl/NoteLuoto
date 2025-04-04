@@ -25,6 +25,8 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
 };
 
 

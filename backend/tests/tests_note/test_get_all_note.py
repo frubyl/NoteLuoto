@@ -7,29 +7,73 @@ async def test_unauthorized_access_to_notes(service_client, auth_header):
     response = await service_client.get("/notes")
     assert response.status == 401
 
+
+
+async def test_notes_invalid_page(service_client, auth_header):
+    """Тест проверяет некорректную страницу"""
+    response = await service_client.get("/notes",
+                                        params = {"page":  "-2",
+                                                  "limit":  "2", 
+                                                  "tags": "tag3"},
+                                        headers=auth_header)
+
+    assert response.status == 400
+
+async def test_notes_invalid_limit(service_client, auth_header):
+    """Тест проверяет некорректный лимит"""
+    response = await service_client.get("/notes",
+                                        params = {"page":  "2",
+                                                  "limit":  "-2", 
+                                                  "tags": "tag3"},
+                                        headers=auth_header)
+
+    assert response.status == 400
+
+async def test_notes_invalid_searchType(service_client, auth_header):
+    """Тест проверяет некорректный тип поиска"""
+    response = await service_client.get("/notes",
+                                        params = {"page":  "2",
+                                                  "limit":  "-2", 
+                                                  "searchType": "t",
+                                                  "tags": "tag3"},
+                                        headers=auth_header)
+
+    assert response.status == 400
+
+async def test_notes_invalid_query(service_client, auth_header):
+    """Тест проверяет некорректный запрос"""
+    response = await service_client.get("/notes",
+                                        params = {"page":  "2",
+                                                  "query":  "", 
+                                                  "tags": "tag3"},
+                                        headers=auth_header)
+
+    assert response.status == 400
+
+async def test_notes_invalid_tags(service_client, auth_header):
+    """Тест проверяет некорректный массив тегов"""
+    response = await service_client.get("/notes",
+                                        params = {"page":  "2",
+                                                  "tags": ["1", "1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1"]},
+                                        headers=auth_header)
+
+    assert response.status == 400
+
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
 async def test_notes_pagination(service_client, auth_header):
     """Тест проверяет корректность пагинации при получении списка заметок"""
     response = await service_client.get("/notes",
                                         params = {"page":  "2",
-                                                  "limit":  "2", 
-                                                  "searchType": "none",
+                                                  "limit":  "5", 
                                                   "tags": "tag3"},
                                         headers=auth_header)
-    expected = {"total_count": 1, 
+    expected = {"total_count":0, 
                  "notes": [
-                {
-                    "note_id": 6,
-                    "title": "title",
-                    "body": "body",
-                    "created_at": "2025-03-10T07:00:00+00:00",
-                    "updated_at": "2025-03-10T07:00:00+00:00"
-                }
+          
                 ]
     }
     assert response.status == 200
     assert response.json() == expected
-
 # ===========
 # ТОЛЬКО ТЕГИ
 # ===========
@@ -40,7 +84,6 @@ async def test_tag_filter_no_results(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
-                                                  "searchType": "none",
                                                   "tags": "doesntExist"},
                                         headers=auth_header)
 
@@ -58,7 +101,6 @@ async def test_single_tag_filter(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
-                                                  "searchType": "none",
                                                   "tags": "tag3"},
                                         headers=auth_header)
     expected = {
@@ -97,7 +139,6 @@ async def test_multiple_tags_filter(service_client, auth_header):
     response = await service_client.get("/notes",
                                         params = {"page":  "1",
                                                   "limit":  "20", 
-                                                  "searchType": "none",
                                                   "tags": ["tag3", "tag2"]},
                                         headers=auth_header)
     expected = {

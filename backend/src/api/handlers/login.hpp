@@ -26,6 +26,11 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
   const utils::jwt::JWTManager jwt_manager_;
+  userver::formats::json::Value buildErrorMessage(std::string message) const; 
+  bool validatePassword(std::string& password) const;
+  bool validateUsername(std::string& username) const;
+  bool validateUserData(std::string& username, std::string& password) const;
+
 };
 
 

@@ -26,6 +26,8 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
+  userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
 };
 } // namespace all::get 
 
@@ -45,6 +47,8 @@ namespace create::post {
     
      private:
       const userver::storages::postgres::ClusterPtr cluster_;
+      userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
     };
 } // namespace create::post
 
@@ -64,6 +68,8 @@ namespace post {
        
         private:
          const userver::storages::postgres::ClusterPtr cluster_;
+         userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
        };
 } // namespace post 
 
@@ -83,6 +89,8 @@ namespace del {
     
      private:
       const userver::storages::postgres::ClusterPtr cluster_;
+      userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
     };
 } // namespace del
 
@@ -101,6 +109,8 @@ namespace get {
        
         private:
          const userver::storages::postgres::ClusterPtr cluster_;
+         userver::formats::json::Value buildErrorMessage(std::string message) const; 
+
        };
 } // namespace get
 } // namespace note

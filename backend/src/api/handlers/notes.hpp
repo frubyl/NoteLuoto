@@ -32,7 +32,7 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
   const search_service::SearchService searchService_;
 
   userver::formats::json::Value buildResponsebody(std::vector<models::NoteWithId>& findNotes) const;
-
+  userver::formats::json::Value buildErrorMessage(std::string message) const;
 };
 
 

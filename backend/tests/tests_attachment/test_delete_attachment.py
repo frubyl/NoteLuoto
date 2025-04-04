@@ -18,3 +18,13 @@ async def test_delete_attachment_success(service_client, auth_header):
     """Тест успешное удаление"""
     response = await service_client.delete('/attachment/20', headers = auth_header)
     assert response.status == 200
+
+async def test_delete_attachment_invalid_attachment_id(service_client, auth_header):
+    """Тест неверные данные запроса"""
+    response = await service_client.delete('/attachment/-1', headers = auth_header)
+    assert response.status == 400
+
+async def test_delete_attachment_file_invalid_token(service_client):
+    """Тест неверный токен"""
+    response = await service_client.delete('/attachment/22')
+    assert response.status == 401

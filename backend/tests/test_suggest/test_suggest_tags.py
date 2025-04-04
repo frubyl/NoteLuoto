@@ -55,3 +55,29 @@ async def test_suggest_tags_grpc_error(service_client, mock_grpc_tag_recommender
     assert 'Internal Server Error' in response.json()['message']
     assert mock_recommend_tags.times_called == 1
 
+async def test_suggest_tags_invalid_token(service_client, mock_grpc_tag_recommender):
+    """Тест неверный токен"""
+    @mock_grpc_tag_recommender('RecommendTags')
+    async def mock_recommend_tags(request, context):
+        return tag_recommender_protos.RecommendedTags(
+            recommended_tags=[]
+        )
+    response = await service_client.post(
+        '/suggest/tags/1',
+    )
+    
+    assert response.status == 401
+
+async def test_suggest_tags_invalid_note_id(service_client, mock_grpc_tag_recommender, auth_header):
+    """Тест неверный токен"""
+    @mock_grpc_tag_recommender('RecommendTags')
+    async def mock_recommend_tags(request, context):
+        return tag_recommender_protos.RecommendedTags(
+            recommended_tags=[]
+        )
+    response = await service_client.post(
+        '/suggest/tags/-1',
+        headers=auth_header
+    )
+    
+    assert response.status == 400

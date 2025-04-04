@@ -26,3 +26,20 @@ async def test_note_add_tag_success(service_client, auth_header):
     response = await service_client.post("/tags/1/1",
                                          headers = auth_header)
     assert response.status == 200
+
+async def test_note_add_tag_invalid_note_id(service_client, auth_header):
+    """Тест проверяет неверный id заметки"""
+    response = await service_client.post("/tags/-1/1",
+                                         headers = auth_header)
+    assert response.status == 400
+
+async def test_note_add_tag_invalid_tag_id(service_client, auth_header):
+    """Тест проверяет неверный id тега"""
+    response = await service_client.post("/tags/1/-1",
+                                         headers = auth_header)
+    assert response.status == 400
+
+async def test_note_add_tag_invalid_token(service_client):
+    """Тест проверяет неверный токен"""
+    response = await service_client.post("/tags/1/1")
+    assert response.status == 401

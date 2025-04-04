@@ -17,3 +17,18 @@ async def test_delete_note_success(service_client, auth_header):
         headers=auth_header
     )
     assert response.status == 200
+
+async def test_delete_note_invalid_note_id(service_client, auth_header):
+    """Тест проверяет неверное значение note_id"""
+    response = await service_client.delete(
+        "/note/-1", 
+        headers=auth_header
+    )
+    assert response.status == 400
+
+async def test_delete_note_invalid_token(service_client):
+    """Тест проверяет неверный токен"""
+    response = await service_client.delete(
+        "/note/1"
+    )
+    assert response.status == 401

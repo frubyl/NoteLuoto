@@ -22,3 +22,15 @@ async def test_get_note_tags_success(service_client, auth_header):
     ]
     assert response.status == 200
     assert response.json() == expected
+
+
+async def test_get_note_invalid_request(service_client, auth_header):
+    """Тест проверяет неверный запрос"""
+    response = await service_client.get("/tags/-1",
+                                         headers = auth_header)
+    assert response.status == 400
+
+async def test_get_note_invalid_token(service_client):
+    """Тест проверяет невалидный токен"""
+    response = await service_client.get("/tags/1")
+    assert response.status == 401

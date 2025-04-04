@@ -30,8 +30,8 @@ private:
         const userver::storages::postgres::ClusterPtr cluster_;
 
         userver::formats::json::Value buildResponsebody(std::string& answer) const;
-        // Возвращает id запроса 
         void addQueryAndAnswerToHistory(int32_t& user_id, std::string& query, std::string& answer) const; 
+        userver::formats::json::Value buildErrorMessage(std::string message) const; 
 
 };
 }  // namespace nl::handlers::api::ai::answer 
