@@ -1,0 +1,6 @@
+[submodule "backend/third_party/bcrypt"]
+	path = third_party/bcrypt
+	url = git@github.com:hilch/Bcrypt.cpp.git
+[submodule "backend/third_party/cpp-jwt"]
+	path = third_party/cpp-jwt
+	url = https://github.com/arun11299/cpp-jwt.git
