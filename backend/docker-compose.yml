@@ -30,7 +30,6 @@ services:
 
         ports:
           - 8080:8080
-          - 8090:8090
         working_dir: /backend
         entrypoint:
           - ./tests/run_as_user.sh
@@ -39,6 +38,7 @@ services:
         networks:
           - postgres
           - dockerbridge
+          - ai-service
 
 networks:
     postgres:
@@ -53,3 +53,6 @@ networks:
             config:
              - subnet: 2001:3984:3989::/64
                gateway: 2001:3984:3989::1
+    ai-service:  
+        driver: bridge
+        internal: true  # Закрытая сеть 
