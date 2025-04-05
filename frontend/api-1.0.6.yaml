@@ -1226,10 +1226,19 @@ components:
           type: string
           format: date-time
           example: '2025-01-02T12:34:56'
-
     Notes:
-      type: array
-      minItems: 0
-      maxItems: 100
-      items:
-        $ref: '#/components/schemas/NoteResponse'
+      required:
+        - notes
+        - total_count
+      properties:
+          notes:
+            type: array
+            minItems: 0
+            maxItems: 100
+            items:
+              $ref: '#/components/schemas/NoteResponse'
+          total_count:
+            type: integer
+            minLength: 0
+            maxLength: 100
+            example: 2

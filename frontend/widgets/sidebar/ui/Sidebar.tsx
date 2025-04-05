@@ -2,13 +2,15 @@ import { Link } from "react-router";
 
 export function Sidebar() {
   return (
-    <div className="text-black w-28 pl-1 pr-1 pt-6 bg-[#3a3844]">
-      <nav className="flex flex-col space-y-3">
-        <SidebarButton to="/" label="Home" />
-        <SidebarButton to="/notes" label="All Notes" />
-        <SidebarButton to="/search" label="Search" />
-        <SidebarButton to="/chat" label="AI Chat" />
-      </nav>
+    <div className="text-black w-28 pl-1 pr-1 pt-6">
+      <div className="fixed bottom-0 top-0 w-28 pl-1 pr-1 pt-6 bg-[#3a3844]">
+        <nav className="flex flex-col space-y-3">
+          <SidebarButton to="/" label="Home" />
+          <SidebarButton to="/notes" label="All Notes" />
+          <SidebarButton to="/search" label="Search" />
+          <SidebarButton to="/chat" label="AI Chat" />
+        </nav>
+      </div>
     </div>
   );
 }

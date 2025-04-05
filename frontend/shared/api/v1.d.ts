@@ -433,7 +433,11 @@ export interface components {
              */
             updated_at: string;
         };
-        Notes: components["schemas"]["NoteResponse"][];
+        Notes: {
+            notes: components["schemas"]["NoteResponse"][];
+            /** @example 2 */
+            total_count: number;
+        };
     };
     responses: never;
     parameters: never;

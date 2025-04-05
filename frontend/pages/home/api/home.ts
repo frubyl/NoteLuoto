@@ -11,7 +11,7 @@ export async function getRecentNotes(num: number): Promise<RecentNotes> {
   
   return {
     status: response.status,
-    notes: data
+    notes: data?.notes
   }
 }
 

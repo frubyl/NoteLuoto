@@ -1,6 +1,39 @@
 import { http, HttpResponse } from 'msw'
-import type { LoginRequest, LoginResponse, NoteResponse } from 'shared/api'
+import type { LoginRequest, LoginResponse, NoteResponse, Notes } from 'shared/api'
 import { type NoteCreateResponse, type NoteCreateRequest, type NotePatchRequest, type RegisterRequest, type ChatAnswerRequest, type TagCreateRequest } from 'shared/api'
+import { type NotesRequest } from 'shared/api/models'
+
+let notes: NoteResponse[] = [{
+  note_id: 1,
+  title: "note1",
+  body: "abcd",
+  created_at: "2025-03-14T10:28:47Z",
+  updated_at: "2025-03-14T10:28:47Z",
+},
+{
+  note_id: 2,
+  title: "note2",
+  body: "abcdd",
+  created_at: "2025-03-13T10:28:47Z",
+  updated_at: "2025-03-13T10:28:47Z",
+},
+{
+  note_id: 3,
+  title: "note3",
+  body: "abcddd",
+  created_at: "2025-03-12T10:28:47Z",
+  updated_at: "2025-03-12T10:28:47Z",
+}]
+
+for (let i = 4; i < 100; i++) {
+  notes.push({
+    note_id: i,
+    title: "note" + i.toString(),
+    body: "note" + i.toString(),
+    created_at: "2025-03-12T10:28:47Z",
+    updated_at: "2025-03-12T10:28:47Z"
+  })
+}
 
 let noteTitle = "note1"
 let noteBody = "body"
@@ -22,25 +55,25 @@ const chatHistory: Array<{
   response: string;
   created_at: string;
 }> = [
-  {
-    query_id: 1,
-    query: "How can I improve my productivity?",
-    response: "Try using the Pomodoro technique.",
-    created_at: "2025-03-14T10:00:00Z"
-  },
-  {
-    query_id: 2,
-    query: "What is the weather like?",
-    response: "It's sunny today.",
-    created_at: "2025-03-14T09:50:00Z"
-  },
-  {
-    query_id: 3,
-    query: "Tell me a joke.",
-    response: "Why did the chicken cross the road? To get to the other side!",
-    created_at: "2025-03-14T09:40:00Z"
-  }
-]
+    {
+      query_id: 1,
+      query: "How can I improve my productivity?",
+      response: "Try using the Pomodoro technique.",
+      created_at: "2025-03-14T10:00:00Z"
+    },
+    {
+      query_id: 2,
+      query: "What is the weather like?",
+      response: "It's sunny today.",
+      created_at: "2025-03-14T09:50:00Z"
+    },
+    {
+      query_id: 3,
+      query: "Tell me a joke.",
+      response: "Why did the chicken cross the road? To get to the other side!",
+      created_at: "2025-03-14T09:40:00Z"
+    }
+  ]
 
 export const handlers = [
   http.post<never, LoginRequest>('/auth/login', async ({ request }) => {
@@ -63,28 +96,18 @@ export const handlers = [
   http.post<never, RegisterRequest>('/auth/register', async ({ request }) => {
     return HttpResponse.text('', { status: 201 })
   }),
-  http.get('/notes', async ({ request }) => {
-    return HttpResponse.json<NoteResponse[]>([{
-      note_id: 1,
-      title: "note1",
-      body: "abcd",
-      created_at: "2025-03-14T10:28:47Z",
-      updated_at: "2025-03-14T10:28:47Z",
-    },
-    {
-      note_id: 2,
-      title: "note2",
-      body: "abcdd",
-      created_at: "2025-03-13T10:28:47Z",
-      updated_at: "2025-03-13T10:28:47Z",
-    },
-    {
-      note_id: 3,
-      title: "note3",
-      body: "abcddd",
-      created_at: "2025-03-12T10:28:47Z",
-      updated_at: "2025-03-12T10:28:47Z",
-    }])
+  http.get('/notes', async ({ request, params }) => {
+    const url = new URL(request.url)
+
+    const page = parseInt(url.searchParams.get('page') ?? '1')
+    const limit = parseInt(url.searchParams.get('limit') ?? '20')
+    
+    const offset = limit * (page - 1)
+    
+    return HttpResponse.json<Notes>({
+      notes: notes.slice(offset, offset + limit),
+      total_count: notes.length
+    },)
   }),
   http.get('/notes/1', async ({ request }) => {
     return HttpResponse.json<NotePatchRequest>({
