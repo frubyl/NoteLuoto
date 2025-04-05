@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { getNote, updateNote, deleteNote } from "../api/note";
 import type { NotePatchRequest } from "shared/api";
 import { Sidebar } from 'widgets/sidebar';
 import { TagModal } from './TagModal';
-import { 
-  getTagsForNote, 
-  removeTagFromNote, 
-  type Tag 
-} from "../api/tag";
+import Highlight from '@tiptap/extension-highlight';
+import Typography from '@tiptap/extension-typography';
+import Image from '@tiptap/extension-image'
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { getTagsForNote, removeTagFromNote, type Tag } from "../api/tag";
+import { marked } from 'marked';
+import TurndownService from 'turndown';
+
+const turndownService = new TurndownService({headingStyle: 'atx'});
 
 export function NotePage() {
   const { note_id } = useParams();
@@ -16,10 +21,37 @@ export function NotePage() {
   const [note, setNote] = useState<NotePatchRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<NotePatchRequest>({ title: "", body: "" });
   const [noteTags, setNoteTags] = useState<Tag[]>([]);
   const [tagModalOpen, setTagModalOpen] = useState(false);
+
+  const saveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const editor = useEditor({
+    extensions: [StarterKit, Highlight, Typography, Image],
+    content: '',
+  });
+
+  const autoSave = async () => {
+    if (note_id && editor) {
+      const htmlContent = editor.getHTML();
+      const markdown = turndownService.turndown(htmlContent);
+      try {
+        await updateNote(parseInt(note_id), { title: formData.title, body: markdown });
+        const updatedNote = await getNote(parseInt(note_id));
+        setNote(updatedNote);
+      } catch (err) {
+        setError("Error updating note.");
+      }
+    }
+  };
+
+  const scheduleAutoSave = () => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+    }
+    saveTimer.current = setTimeout(autoSave, 2000);
+  };
 
   useEffect(() => {
     async function fetchNote() {
@@ -28,6 +60,10 @@ export function NotePage() {
           const data = await getNote(parseInt(note_id));
           setNote(data);
           setFormData({ title: data.title, body: data.body });
+          if (editor) {
+            const html = marked(data.body ?? '');
+            editor.commands.setContent(html);
+          }
           const tags = await getTagsForNote(parseInt(note_id));
           setNoteTags(tags);
         }
@@ -38,19 +74,25 @@ export function NotePage() {
       }
     }
     fetchNote();
-  }, [note_id]);
+  }, [note_id, editor]);
 
-  const handleSave = async () => {
-    try {
-      if (note_id) {
-        await updateNote(parseInt(note_id), formData);
-        setEditing(false);
-        const updatedNote = await getNote(parseInt(note_id));
-        setNote(updatedNote);
-      }
-    } catch (err) {
-      setError("Error updating note.");
+  useEffect(() => {
+    if (editor) {
+      const onUpdate = () => {
+        scheduleAutoSave();
+      };
+      editor.on('update', onUpdate);
+      return () => {
+        editor.off('update', onUpdate);
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+      };
     }
+  }, [editor, formData.title]);
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('a')
+    setFormData((prev) => ({ ...prev, title: e.target.value }));
+    scheduleAutoSave();
   };
 
   const handleDelete = async () => {
@@ -83,7 +125,7 @@ export function NotePage() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="p-6 w-full">
+      <div className="p-6 w-full overflow-y-auto">
         <div className="mb-4 flex items-center space-x-2">
           <button
             onClick={() => setTagModalOpen(true)}
@@ -104,49 +146,24 @@ export function NotePage() {
           ))}
         </div>
 
-        {editing ? (
-          <div>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              placeholder="Title"
-              className="mb-4 p-2 w-full"
-            />
-            <textarea
-              value={formData.body}
-              onChange={(e) =>
-                setFormData({ ...formData, body: e.target.value })
-              }
-              placeholder="Note body"
-              className="mb-4 p-2 w-full h-64"
-            />
-            <button onClick={handleSave} className="mr-2 p-2 bg-green-500 text-white rounded">
-              Save
-            </button>
-            <button onClick={() => setEditing(false)} className="p-2 bg-gray-500 text-white rounded">
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h1 className="text-white text-2xl font-bold mb-4">{note.title}</h1>
-            <p className="text-white mb-6 whitespace-pre-wrap">{note.body}</p>
-            <div>
-              <button onClick={() => setEditing(true)} className="mr-2 p-2 bg-blue-500 text-white rounded">
-                Edit
-              </button>
-              <button onClick={handleDelete} className="p-2 bg-red-500 text-white rounded">
-                Delete
-              </button>
-            </div>
-          </div>
-        )}
+        <input
+          type="text"
+          value={formData.title}
+          onChange={handleTitleChange}
+          placeholder="Title"
+          className="mb-4 p-2 w-full"
+        />
+
+        <EditorContent className="bg-white p-2 border rounded mb-4" editor={editor} />
+
+        <div className="flex space-x-2">
+          <button onClick={handleDelete} className="p-2 bg-red-500 text-white rounded">
+            Delete
+          </button>
+        </div>
       </div>
       {tagModalOpen && note_id && (
-        <TagModal 
+        <TagModal
           noteId={parseInt(note_id)}
           onClose={() => setTagModalOpen(false)}
           onTagAdded={async () => {
