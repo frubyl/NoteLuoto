@@ -17,6 +17,7 @@ components_manager:
             listener:                 
                 port: $server-port            
                 task_processor: main-task-processor    
+        custom-handler-pipeline-builder:
         logging:
             fs-task-processor: fs-task-processor
             loggers:
@@ -39,14 +40,13 @@ components_manager:
 
         grpc-client-factory:
             channel-args: {}
-            middlewares:
-              - grpc-client-logging
-              - grpc-client-deadline-propagation
 
-        grpc-client-logging:
-        grpc-client-deadline-propagation:
-  
 
+        # grpc-client-logging:
+        # grpc-client-deadline-propagation:
+        # grpc-client-middleware-testsuite:
+
+        # grpc-client-middleware-testsuite:
         note-sync-client: 
             endpoint: $grpc-endpoint
 
@@ -75,21 +75,31 @@ components_manager:
 
         handler-post-api-register:
             path: /auth/register
-            method: POST
+            method: POST,OPTIONS
+            middlewares:
+                pipeline-builder: custom-handler-pipeline-builder
+                cors-middleware:
+
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
             
         handler-post-api-login:
             path: /auth/login
-            method: POST
+            method: POST,OPTIONS
+            middlewares:
+                pipeline-builder: custom-handler-pipeline-builder
+                cors-middleware:
+
+
             task_processor: main-task-processor
             throttling_enabled: false
             url_trailing_slash: strict-match
 
         handler-get-history:
             path: /history
-            method: GET
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -100,7 +110,8 @@ components_manager:
 
         handler-post-suggest-tags:
             path: /suggest/tags/{note_id}
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -111,7 +122,8 @@ components_manager:
 
         handler-get-suggest-queries:
             path: /suggest/queries
-            method: GET
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -122,7 +134,8 @@ components_manager:
 
         handler-post-ai-answer:
             path: /ai/answer
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -134,7 +147,8 @@ components_manager:
         # Эндпоинты для работы с заметками
         handler-get-all-notes:
             path: /notes
-            method: GET
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -144,8 +158,9 @@ components_manager:
             url_trailing_slash: strict-match
 
         handler-post-note:
-            path: /note
+            path: /notes
             method: POST
+
             auth:
                 types:
                 - bearer
@@ -155,8 +170,9 @@ components_manager:
             url_trailing_slash: strict-match
             
         handler-get-note:
-            path: /note/{note_id}
-            method: GET
+            path: /notes/{note_id}
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -166,8 +182,9 @@ components_manager:
             url_trailing_slash: strict-match
 
         handler-patch-note:
-            path: /note/{note_id}
+            path: /notes/{note_id}
             method: PATCH
+
             auth:
                 types:
                 - bearer
@@ -177,8 +194,9 @@ components_manager:
             url_trailing_slash: strict-match
 
         handler-delete-note:
-            path: /note/{note_id}
+            path: /notes/{note_id}
             method: DELETE
+
             auth:
                 types:
                 - bearer
@@ -190,7 +208,8 @@ components_manager:
         # Эндпоинты для работы с тегами
         handler-post-tags-create:
             path: /tags/create
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -201,7 +220,8 @@ components_manager:
 
         handler-get-tags-all:
             path: /tags/all
-            method: GET
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -212,7 +232,8 @@ components_manager:
 
         handler-get-tags-note:
             path: /tags/{note_id}
-            method: GET
+            method: GET,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -223,7 +244,8 @@ components_manager:
 
         handler-post-tags-note-tag:
             path: /tags/{note_id}/{tag_id}
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -235,6 +257,7 @@ components_manager:
         handler-delete-tags-note-tag:
             path: /tags/{note_id}/{tag_id}
             method: DELETE
+
             auth:
                 types:
                 - bearer
@@ -246,7 +269,8 @@ components_manager:
         # Эндпоинты для работы с чеклистами
         handler-post-checklist-note:
             path: /checklist/{note_id}
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -258,6 +282,7 @@ components_manager:
         handler-get-checklist:
             path: /checklist/{checklist_id}
             method: GET
+
             auth:
                 types:
                 - bearer
@@ -269,6 +294,7 @@ components_manager:
         handler-delete-checklist:
             path: /checklist/{checklist_id}
             method: DELETE
+
             auth:
                 types:
                 - bearer
@@ -280,6 +306,8 @@ components_manager:
         handler-patch-checklist:
             path: /checklist/{checklist_id}
             method: PATCH
+
+
             auth:
                 types:
                 - bearer
@@ -292,7 +320,8 @@ components_manager:
         # Эндпоинты для работы с пунктами чеклистов
         handler-post-checklist-item:
             path: /checklist/{checklist_id}/item
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -303,7 +332,8 @@ components_manager:
 
         handler-patch-checklist-item:
             path: /checklist/item/{item_id}
-            method: PATCH
+            method: PATCH,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -315,6 +345,7 @@ components_manager:
         handler-delete-checklist-item:
             path: /checklist/item/{item_id}
             method: DELETE
+
             auth:
                 types:
                 - bearer
@@ -326,7 +357,8 @@ components_manager:
         # Эндпоинты для работы с вложениями 
         handler-post-attachment-note:
             path: /attachment/{note_id}
-            method: POST
+            method: POST,OPTIONS
+
             auth:
                 types:
                 - bearer
@@ -338,6 +370,7 @@ components_manager:
         handler-get-attachment:
             path: /attachment/{attachment_id}
             method: GET
+
             auth:
                 types:
                 - bearer
@@ -349,6 +382,7 @@ components_manager:
         handler-delete-attachment:
             path: /attachment/{attachment_id}
             method: DELETE
+
             auth:
                 types:
                 - bearer

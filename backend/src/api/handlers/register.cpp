@@ -40,7 +40,6 @@ namespace nl::handlers::api::reg::post {
       return {};
     }
 
- 
     addNewUserToDB(userAuthRequest.username_, userAuthRequest.password_);
     request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);  
     return {};

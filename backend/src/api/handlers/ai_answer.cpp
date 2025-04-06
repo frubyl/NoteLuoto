@@ -22,6 +22,10 @@ namespace nl::handlers::api::ai::answer {
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         int32_t user_id = context.GetData<int32_t>("user_id");
 
         auto request_body = userver::formats::json::FromString(request.RequestBody());

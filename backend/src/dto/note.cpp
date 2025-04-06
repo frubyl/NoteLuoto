@@ -27,7 +27,7 @@ NoteRequest ParseNoteRequest(const userver::server::http::HttpRequest& request,
     }
     if (request_body.HasMember("body")) {
         noteRequest.body_ = request_body["body"].As<std::string>();
-        if (noteRequest.body_.size() < 1 || noteRequest.body_.size() > 20000) {
+        if (noteRequest.body_.size() > 20000) {
             throw std::invalid_argument{"Invalid body size: empty or max(20000) exeded"};
         }
     }

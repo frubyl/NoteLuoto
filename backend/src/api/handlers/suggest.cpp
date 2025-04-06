@@ -19,7 +19,10 @@ namespace nl::handlers::api::suggest {
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
-     
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         auto suggestions = langchainClient_.RecommendPrompts();
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return buildResponsebody(suggestions);
@@ -52,6 +55,10 @@ namespace nl::handlers::api::suggest {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
+                if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+                    return{};
+                }
                 if (!request.HasPathArg("note_id")) {
                     request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
                     return buildErrorMessage("Note_id in path is empty");

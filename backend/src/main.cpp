@@ -14,7 +14,7 @@
 #include <userver/ugrpc/client/common_component.hpp>
 #include <userver/ugrpc/client/middlewares/deadline_propagation/component.hpp>
 #include <userver/ugrpc/client/middlewares/log/component.hpp>
-
+#include <userver/ugrpc/client/middlewares/base.hpp>
 // Пользовательские компоненты 
 #include "api/auth/auth_bearer.hpp"
 #include "api/handlers/register.hpp"
@@ -31,12 +31,11 @@
 #include "grpc_clients/grpc_sync_client.hpp"
 #include "grpc_clients/grpc_langchain_client.hpp"
 #include "grpc_clients/grpc_tag_recommender_client.hpp"
-
-
+#include "utils/pipeline_builder.cpp"
+#include <userver/ugrpc/client/component_list.hpp>
 int main(int argc, char* argv[]) {
   using namespace nl;
-  userver::server::handlers::auth::RegisterAuthCheckerFactory(
-    "bearer", std::make_unique<handlers::auth::CheckerFactory>());
+  userver::server::handlers::auth::RegisterAuthCheckerFactory<handlers::auth::CheckerFactory>();
   auto component_list =
       userver::components::MinimalServerComponentList()
           .Append<userver::server::handlers::Ping>()
@@ -48,11 +47,19 @@ int main(int argc, char* argv[]) {
           .Append<userver::components::DefaultSecdistProvider>()
           .Append<userver::components::HttpClient>()
 
+
           // Добавление компонентов для grpc клиентов 
-          .Append<userver::ugrpc::client::CommonComponent>()
+          // .Append<userver::ugrpc::client::CommonComponent>()
           .Append<userver::ugrpc::client::ClientFactoryComponent>()
-          .Append<userver::ugrpc::client::middlewares::deadline_propagation::Component>()
-          .Append<userver::ugrpc::client::middlewares::log::Component>()
+          // .Append<userver::ugrpc::client::middlewares::deadline_propagation::Component>()
+          // .Append<userver::ugrpc::client::middlewares::log::Component>()
+          // .Append<userver::ugrpc::client::MiddlewarePipelineComponent>()
+
+          .AppendComponentList(userver::ugrpc::client::MinimalComponentList())
+
+          
+          .Append<utils::CustomHandlerPipelineBuilder>("custom-handler-pipeline-builder")
+            .Append<utils::CORSMiddlewareFactory>()
 
           // Добавление grpc - клиентов
           .Append<nl::grpc::clients::NoteSyncClient>()
@@ -103,5 +110,6 @@ int main(int argc, char* argv[]) {
           .Append<handlers::api::note::patch::Handler>()
           .Append<handlers::api::get::notes::Handler>()
           .Append<handlers::api::note::post::Handler>();
+
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

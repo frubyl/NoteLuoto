@@ -23,7 +23,10 @@ namespace nl::handlers::api::note {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
-
+                if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+                    return{};
+                }
             dto::NoteRequest noteRequest;
             try {
                 noteRequest = dto::ParseNoteRequest(request, context);
@@ -72,7 +75,11 @@ namespace nl::handlers::api::note {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
-            dto::NoteRequest noteRequest;
+                if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+                    return{};
+                }
+                dto::NoteRequest noteRequest;
             try {
                 noteRequest = dto::ParseNoteRequest(request, context);
             } catch(std::exception& ex) {
@@ -135,6 +142,10 @@ namespace nl::handlers::api::note {
             const userver::server::http::HttpRequest& request,
             const userver::formats::json::Value& request_json,
             userver::server::request::RequestContext& context) const  {
+                if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+                    request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+                    return{};
+                }
                 dto::NoteRequest noteRequest;
                 try {
                     noteRequest = dto::ParseNoteRequest(request, context);
@@ -216,6 +227,10 @@ namespace nl::handlers::api::note {
         const userver::server::http::HttpRequest& request,
         const userver::formats::json::Value& request_json,
         userver::server::request::RequestContext& context) const  {
+            if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+                request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+                return{};
+            }
             dto::NoteRequest noteRequest;
             try {
                 noteRequest = dto::ParseNoteRequest(request, context);

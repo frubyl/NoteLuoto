@@ -21,6 +21,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value&,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         dto::HistoryRequest historyRequest;
 
         try {

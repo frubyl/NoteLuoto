@@ -1,6 +1,9 @@
 #pragma once
-
+#include <userver/server/handlers/auth/digest/auth_checker_settings_component.hpp>
 #include <userver/server/handlers/auth/auth_checker_factory.hpp>
+#include <userver/server/handlers/auth/auth_checker_settings.hpp>
+#include <userver/server/handlers/auth/handler_auth_config.hpp>
+
 #include "../../utils/jwt.hpp"
 
 namespace nl::handlers::auth {
@@ -10,8 +13,8 @@ class AuthChecker final
  public:
   using AuthCheckResult = userver::server::handlers::auth::AuthCheckResult;
 
-  AuthChecker(const utils::jwt::JWTConfig& config, bool is_optional_auth = false)
-      : jwt_manager_{config}, is_optional_auth_{is_optional_auth} {}
+  AuthChecker(const utils::jwt::JWTConfig& config)
+      : jwt_manager_{config}{}
 
 // Основная проверка
   [[nodiscard]] AuthCheckResult CheckAuth(
@@ -22,17 +25,20 @@ class AuthChecker final
 
  private:
   const utils::jwt::JWTManager jwt_manager_;
-  const bool is_optional_auth_;
+
 };
 
-class CheckerFactory final
-    : public userver::server::handlers::auth::AuthCheckerFactoryBase {
- public:
-  userver::server::handlers::auth::AuthCheckerBasePtr operator()(
-      const userver::components::ComponentContext& context,
-      const userver::server::handlers::auth::HandlerAuthConfig& auth_config,
-      const userver::server::handlers::auth::AuthCheckerSettings&)
-      const override;
-};
+class CheckerFactory final : public userver::server::handlers::auth::AuthCheckerFactoryBase {
+    public:
+        static constexpr std::string_view kAuthType = "bearer";
+    
+        explicit CheckerFactory(const userver::components::ComponentContext& context);
+    
+        userver::server::handlers::auth::AuthCheckerBasePtr MakeAuthChecker(
+            const userver::server::handlers::auth::HandlerAuthConfig& auth_config
+        ) const override;
+    private: 
+        const utils::jwt::JWTConfig jwt_config_;
+    };
 
 }  // namespace nl::handlers::auth

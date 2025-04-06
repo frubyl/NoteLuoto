@@ -42,6 +42,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/utils/file_manager.cpp
     src/utils/data_to_text_formatter.hpp
     src/utils/data_to_text_formatter.cpp
+    src/utils/cors_middleware.cpp
+    src/utils/pipeline_builder.cpp
 
     # gRPC - клиенты
     src/grpc_clients/grpc_sync_client.hpp

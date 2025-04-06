@@ -24,7 +24,10 @@ Handler::Handler(const userver::components::ComponentConfig& config,
 std::string Handler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& context) const {
-
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
     dto::AttachmentRequest attachment_request;
     try {
         attachment_request = dto::ParseAttachmentRequest(request);
@@ -85,7 +88,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const {
-
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
     dto::AttachmentRequest attachment_request;
     try {
         attachment_request = dto::ParseAttachmentRequest(request);
@@ -133,7 +139,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const {
-
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
     dto::AttachmentRequest attachment_request;
     try {
         attachment_request = dto::ParseAttachmentRequest(request);

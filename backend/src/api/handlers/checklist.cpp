@@ -24,6 +24,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         dto::ChecklistRequest checklist;
         try {
             checklist = dto::ParseChecklistRequest(request);
@@ -78,6 +82,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         dto::ChecklistRequest checklist;
         try {
             checklist = dto::ParseChecklistRequest(request);
@@ -134,6 +142,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         dto::ChecklistRequest checklist;
         try {
             checklist = dto::ParseChecklistRequest(request);
@@ -196,6 +208,10 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
     const userver::server::http::HttpRequest& request,
     const userver::formats::json::Value& request_json,
     userver::server::request::RequestContext& context) const  {
+        if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+            request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+            return{};
+        }
         dto::ChecklistRequest checklist;
         try {
             checklist = dto::ParseChecklistRequest(request);

@@ -9,12 +9,17 @@ namespace nl::handlers::auth {
 AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
-  const auto& auth_value = request.GetHeader("Authorization");
-  // Проверка на наличие данных в заголовке Authorization
+      request.GetHttpResponse().SetHeader(std::string_view("Access-Control-Allow-Origin"), "*");
+      request.GetHttpResponse().SetHeader(std::string_view("Access-Control-Allow-Methods"), "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      request.GetHttpResponse().SetHeader(std::string_view("Access-Control-Allow-Headers"), "authentication, Authorization, origin, content-type, accept");
+      request.GetHttpResponse().SetHeader(std::string_view("Allow"), "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    if (request.GetMethod() == userver::server::http::HttpMethod::kOptions) {
+      request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
+      return{};
+  }
+  const auto& auth_value = request.GetHeader("Authentication");
+  // Проверка на наличие данных в заголовке Authentication
   if (auth_value.empty()) {
-    if (is_optional_auth_) {
-      return {};
-    }
     return AuthCheckResult{
         AuthCheckResult::Status::kTokenNotFound,
         {},
@@ -61,18 +66,18 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
   return {};
 }
 
-userver::server::handlers::auth::AuthCheckerBasePtr CheckerFactory::operator()(
-    const userver::components::ComponentContext& context,
-    const userver::server::handlers::auth::HandlerAuthConfig& config,
-    const userver::server::handlers::auth::AuthCheckerSettings&) const {
-  // Получение конфига jwt из конфигурационного файлй
-  const auto jwt_config = context.FindComponent<userver::components::Secdist>()
-                              .Get()
-                              .Get<utils::jwt::JWTConfig>();
-  const auto is_optional_auth =
-      config.HasMember("optional") ? config["optional"].As<bool>() : false;
-  return std::make_shared<AuthChecker>(std::move(jwt_config), is_optional_auth);
- 
+
+CheckerFactory::CheckerFactory(const userver::components::ComponentContext& context) : jwt_config_ (context.FindComponent<userver::components::Secdist>()
+.Get()
+.Get<utils::jwt::JWTConfig>()){
+
+}
+
+userver::server::handlers::auth::AuthCheckerBasePtr CheckerFactory::MakeAuthChecker(
+    const  userver::server::handlers::auth::HandlerAuthConfig& auth_config
+) const {
+   
+    return std::make_shared< AuthChecker>(jwt_config_);
 }
 
 }  // namespace nl::auth
