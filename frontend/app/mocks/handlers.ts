@@ -101,12 +101,18 @@ export const handlers = [
 
     const page = parseInt(url.searchParams.get('page') ?? '1')
     const limit = parseInt(url.searchParams.get('limit') ?? '20')
-    
+
     const offset = limit * (page - 1)
-    
+
+    let filteredNotes = notes
+    const query = url.searchParams.get('query')
+    if (query) {
+      filteredNotes = notes.filter(n => n.title.includes(query))
+    }
+
     return HttpResponse.json<Notes>({
-      notes: notes.slice(offset, offset + limit),
-      total_count: notes.length
+      notes: filteredNotes.slice(offset, offset + limit),
+      total_count: filteredNotes.length
     },)
   }),
   http.get('/notes/1', async ({ request }) => {
