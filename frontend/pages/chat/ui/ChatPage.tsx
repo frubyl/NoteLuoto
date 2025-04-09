@@ -1,14 +1,13 @@
-import { useState, useEffect, useRef, type UIEvent } from "react";
-import { getAIAnswer, getAIHistory } from "../api/chat";
+import { useState, useEffect, useRef, type UIEvent, useCallback } from "react";
+import { getAIAnswer, getAIHistory, getPromptRecommendations } from "../api/chat";
 import { Sidebar } from "widgets/sidebar";
 
 export function ChatPage() {
-
   type Message = {
-    type: "user" | "ai",
-    content: string,
-    created_at: string
-  }
+    type: "user" | "ai";
+    content: string;
+    created_at: string;
+  };
 
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
@@ -16,6 +15,7 @@ export function ChatPage() {
   const [historyPage, setHistoryPage] = useState<number>(1);
   const [hasMoreHistory, setHasMoreHistory] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [recommendedPrompts, setRecommendedPrompts] = useState<string[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const loadHistory = async (page: number) => {
@@ -47,6 +47,18 @@ export function ChatPage() {
     loadHistory(historyPage);
   }, [historyPage]);
 
+  useEffect(() => {
+    async function fetchPrompts() {
+      try {
+        const prompts = await getPromptRecommendations();
+        setRecommendedPrompts(prompts);
+      } catch (err) {
+        console.error("Error fetching prompt recommendations.");
+      }
+    }
+    fetchPrompts();
+  }, []);
+
   const handleScroll = (e: UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     if (container.scrollTop === 0 && hasMoreHistory) {
@@ -54,33 +66,41 @@ export function ChatPage() {
     }
   };
 
-  const handleSend = async () => {
-    if (!message.trim()) return;
-    setError("");
-    setLoadingAnswer(true);
-    const now = new Date().toISOString();
+  const handleSend = useCallback(
+    async (msg?: string) => {
+      const messageToSend = msg !== undefined ? msg : message;
+      if (!messageToSend.trim()) return;
+      setError("");
+      setLoadingAnswer(true);
+      const now = new Date().toISOString();
 
-    setChatHistory((prev) => [
-      ...prev,
-      { type: "user", content: message, created_at: now },
-    ]);
-    try {
-      const aiResult = await getAIAnswer(message);
-      const aiMessage: Message = {
-        type: "ai",
-        content: aiResult,
-        created_at: new Date().toISOString(),
-      };
-      setChatHistory((prev) => [...prev, aiMessage]);
-    } catch (err) {
-      setError("Error getting AI answer.");
-    } finally {
-      setMessage("");
-      setLoadingAnswer(false);
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      setChatHistory((prev) => [
+        ...prev,
+        { type: "user", content: messageToSend, created_at: now },
+      ]);
+      try {
+        const aiResult = await getAIAnswer(messageToSend);
+        const aiMessage: Message = {
+          type: "ai",
+          content: aiResult,
+          created_at: new Date().toISOString(),
+        };
+        setChatHistory((prev) => [...prev, aiMessage]);
+      } catch (err) {
+        setError("Error getting AI answer.");
+      } finally {
+        setMessage("");
+        setLoadingAnswer(false);
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
       }
-    }
+    },
+    [message]
+  );
+
+  const handlePromptClick = (prompt: string) => {
+    handleSend(prompt);
   };
 
   return (
@@ -111,6 +131,20 @@ export function ChatPage() {
           ))}
         </div>
 
+        {recommendedPrompts.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {recommendedPrompts.map((prompt, index) => (
+              <button
+                key={index}
+                onClick={() => handlePromptClick(prompt)}
+                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex">
           <input
             type="text"
@@ -120,7 +154,7 @@ export function ChatPage() {
             className="flex-1 p-2 border border-gray-300 rounded-l"
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={loadingAnswer}
             className="p-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 transition"
           >

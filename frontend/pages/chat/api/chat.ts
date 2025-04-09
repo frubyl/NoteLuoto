@@ -19,3 +19,8 @@ export async function getAIHistory(page: number, limit: number = 20): Promise<Ch
   }
   return data;
 }
+
+export async function getPromptRecommendations(): Promise<string[]> {
+  const { data } = await GET("/suggest/queries")
+  return data ?? []
+}

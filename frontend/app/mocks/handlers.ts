@@ -202,5 +202,8 @@ export const handlers = [
     }
     noteTags.splice(index, 1)
     return HttpResponse.text('', { status: 200 })
+  }),
+  http.get('/suggest/queries', async () => {
+    return HttpResponse.json(['Remind me about a meeting...', 'Tell me a joke', 'What do I need to buy?'])
   })
 ]
