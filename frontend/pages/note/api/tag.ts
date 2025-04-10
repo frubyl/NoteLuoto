@@ -23,6 +23,15 @@ export async function getTagsForNote(noteId: number): Promise<Tag[]> {
 
 export async function createTag(name: string): Promise<Tag> {
   const { data, response } = await POST("/tags/create", { body: { name } });
+  if (response.status === 409) {
+    const tags = await getAllTags()
+    const found = tags.find(t => t.name == name)
+    if (found) {
+      return found
+    }
+    throw new Error("Error creating tag")
+  }
+
   if (response.status !== 201 || !data) {
     throw new Error("Error creating tag");
   }
@@ -45,4 +54,36 @@ export async function removeTagFromNote(noteId: number, tagId: number): Promise<
   if (response.status !== 200) {
     throw new Error("Error removing tag from note");
   }
+}
+
+export async function generateTags(noteId: number): Promise<string[]> {
+  const { data, response } = await POST('/ai/generate_tags/{note_id}', {
+    params: {
+      path: {
+        note_id: noteId
+      }
+    }
+  })
+
+  if (response.status !== 200 || !data) {
+    throw new Error("Failed to generate tags")
+  }
+
+  return data
+}
+
+export async function suggestTags(noteId: number): Promise<string[]> {
+  const { data, response } = await POST('/suggest/tags/{note_id}', {
+    params: {
+      path: {
+        note_id: noteId
+      }
+    }
+  })
+
+  if (response.status !== 200 || !data) {
+    throw new Error("Failed to suggest tags")
+  }
+
+  return data
 }

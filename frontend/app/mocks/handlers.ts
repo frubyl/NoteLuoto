@@ -47,6 +47,7 @@ let allTags = [
   { tag_id: 1, name: "work" },
   { tag_id: 2, name: "personal" },
   { tag_id: 3, name: "urgent" },
+  { tag_id: 4, name: "test" }
 ]
 
 const chatHistory: Array<{
@@ -168,7 +169,7 @@ export const handlers = [
     if (!name || name.length < 1 || name.length > 50) {
       return HttpResponse.text('', { status: 400 })
     }
-    if (allTags.find(tag => tag.name.toLowerCase() === name.toLowerCase())) {
+    if (allTags.find(tag => tag.name === name)) {
       return HttpResponse.text('', { status: 409 })
     }
     const newTagId = allTags.length + 1
@@ -205,5 +206,11 @@ export const handlers = [
   }),
   http.get('/suggest/queries', async () => {
     return HttpResponse.json(['Remind me about a meeting...', 'Tell me a joke', 'What do I need to buy?'])
+  }),
+  http.post('/ai/generate_tags/:note_id', async () => {
+    return HttpResponse.json(["ideas", "things"], { status: 200 })
+  }),
+  http.post('/suggest/tags/:note_id', async () => {
+    return HttpResponse.json(["urgent", "test"], { status: 200 })
   })
 ]
