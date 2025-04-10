@@ -349,26 +349,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/generate_tags/{note_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Генерация тегов на основе данных замтеки
-         * @description Автоматическая генерация тегов на основе текста заметки.
-         */
-        post: operations["generateTags"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/suggest/tags/{note_id}": {
         parameters: {
             query?: never;
@@ -435,7 +415,7 @@ export interface components {
         };
         Notes: {
             notes: components["schemas"]["NoteResponse"][];
-            /** @example 2 */
+            /** @example 5 */
             total_count: number;
         };
     };
@@ -479,12 +459,17 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Некорректные данные для регистрации */
+            /** @description Некорректные данные для регистрации или неверный формат json */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Invalid password */
+                        message?: string;
+                    };
+                };
             };
             /** @description Пользователь с таким именем уже существует */
             409: {
@@ -492,6 +477,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -532,7 +529,19 @@ export interface operations {
                     };
                 };
             };
-            /** @description Неверные данные для аутентификации */
+            /** @description Неверный формат json */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Invalid json */
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Неверный пароль */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -546,6 +555,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
+            };
         };
     };
     getNotesWithSearchAndPagination: {
@@ -555,7 +576,7 @@ export interface operations {
                 query?: string;
                 tags?: string[];
                 /** @description Тип поиска - семантический или точный. */
-                searchType?: "semantic" | "exact" | "ai";
+                searchType?: "semantic" | "exact";
                 /** @description Номер страницы для пагинации (по умолчанию 1). */
                 page?: number;
                 /** @description Количество заметок на странице (по умолчанию 20). */
@@ -576,19 +597,15 @@ export interface operations {
                     "application/json": components["schemas"]["Notes"];
                 };
             };
-            /** @description Неверные параметры запроса */
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        errors?: {
-                            /** @description Имя поля, где произошла ошибка */
-                            field?: string;
-                            /** @description Сообщение об ошибке */
-                            message?: string;
-                        }[];
+                        /** @example title max length (400) exceeded */
+                        message?: string;
                     };
                 };
             };
@@ -598,6 +615,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -634,12 +663,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        errors?: {
-                            /** @description Имя поля, где произошла ошибка */
-                            field?: string;
-                            /** @description Сообщение ошибки дял поля */
-                            message?: string;
-                        }[];
+                        /** @example title max length (512) exceeded */
+                        message?: string;
                     };
                 };
             };
@@ -649,6 +674,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -672,6 +709,18 @@ export interface operations {
                     "application/json": components["schemas"]["NotePatchRequest"];
                 };
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
                 headers: {
@@ -685,6 +734,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -706,6 +767,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
                 headers: {
@@ -719,6 +792,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -734,7 +819,7 @@ export interface operations {
         /** @description Новые данные для заметки */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NotePatchRequest"];
+                "application/json": components["schemas"]["NoteCreateRequest"];
             };
         };
         responses: {
@@ -752,12 +837,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        errors?: {
-                            /** @description Имя поля, где произошла ошибка */
-                            field?: string;
-                            /** @description Сообщение ошибки дял поля */
-                            message?: string;
-                        }[];
+                        /** @example title max length (400) exceeded */
+                        message?: string;
                     };
                 };
             };
@@ -767,6 +848,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -804,6 +897,18 @@ export interface operations {
                     };
                 };
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -817,6 +922,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -854,6 +971,18 @@ export interface operations {
                     };
                 };
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -867,6 +996,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -889,6 +1030,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -902,6 +1055,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -933,6 +1098,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -946,6 +1123,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1017,6 +1206,18 @@ export interface operations {
                     };
                 };
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -1030,6 +1231,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1052,6 +1265,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -1065,6 +1290,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1095,6 +1332,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example title max length (400) exceeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -1108,6 +1357,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal Server Error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1148,12 +1409,17 @@ export interface operations {
                     };
                 };
             };
-            /** @description Файл отсутствует */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Invalid format */
+                        message?: string;
+                    };
+                };
             };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
@@ -1169,12 +1435,17 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Файл слишком большой */
-            413: {
+            /** @description Ошибка на стороне сервера */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Filesystem error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1196,11 +1467,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        file_name?: string;
                         /**
                          * Format: binary
                          * @description Файл, который нужно прикрепить к заметке
                          */
-                        file?: string;
+                        content?: string;
+                    };
+                };
+            };
+            /** @description Неверный формат */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Invalid format */
+                        message?: string;
                     };
                 };
             };
@@ -1211,12 +1495,24 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Вложение не найдено */
+            /** @description Заметка с указанным ID не найдена */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Filesystem error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1238,6 +1534,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Неверный формат */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Invalid format */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Неавторизованный запрос, требуется JWT токен */
             401: {
                 headers: {
@@ -1251,6 +1559,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1283,12 +1603,17 @@ export interface operations {
                     };
                 };
             };
-            /** @description Неверный запрос */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1303,6 +1628,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1336,6 +1673,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
+            };
         };
     };
     getTagsForNote: {
@@ -1364,12 +1713,17 @@ export interface operations {
                     }[];
                 };
             };
-            /** @description Неверный запрос */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1384,6 +1738,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1408,12 +1774,17 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Неверный запрос */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1435,6 +1806,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1459,12 +1842,17 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Неверный запрос */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1479,6 +1867,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1506,18 +1906,22 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        query_id?: number;
                         /** @example Рекомендуется использовать технику Pomodoro для улучшения концентрации. */
                         answer?: string;
                     };
                 };
             };
-            /** @description Неверный запрос */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1525,6 +1929,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1571,12 +1987,17 @@ export interface operations {
                     };
                 };
             };
-            /** @description Неверный запрос. */
+            /** @description Неверный формат */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
             };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
@@ -1584,6 +2005,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };
@@ -1612,41 +2045,17 @@ export interface operations {
                 };
                 content?: never;
             };
-        };
-    };
-    generateTags: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                note_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Список сгенерированных тегов */
-            200: {
+            /** @description Ошибка на стороне сервера */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string[];
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
                 };
-            };
-            /** @description Недействительный или истёкший JWT-токен. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Заметка не найдена */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -1670,6 +2079,18 @@ export interface operations {
                     "application/json": string[];
                 };
             };
+            /** @description Неверный формат */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Max tag lenght exeded */
+                        message?: string;
+                    };
+                };
+            };
             /** @description Недействительный или истёкший JWT-токен. */
             401: {
                 headers: {
@@ -1683,6 +2104,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
             };
         };
     };

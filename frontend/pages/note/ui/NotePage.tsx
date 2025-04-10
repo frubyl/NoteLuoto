@@ -9,7 +9,7 @@ import Typography from '@tiptap/extension-typography';
 import Image from '@tiptap/extension-image';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { getTagsForNote, removeTagFromNote, generateTags, suggestTags, createTag, addTagToNote, type Tag } from "../api/tag";
+import { getTagsForNote, removeTagFromNote, suggestTags, createTag, addTagToNote, type Tag } from "../api/tag";
 import { marked } from 'marked';
 import TurndownService from 'turndown';
 
@@ -26,9 +26,7 @@ export function NotePage() {
   const [tagModalOpen, setTagModalOpen] = useState(false);
 
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [generatedTags, setGeneratedTags] = useState<string[]>([]);
   const [loadingSuggest, setLoadingSuggest] = useState<boolean>(false);
-  const [loadingGenerate, setLoadingGenerate] = useState<boolean>(false);
 
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -136,32 +134,14 @@ export function NotePage() {
     }
   };
 
-  const handleGenerateTags = async () => {
-    if (!note_id) return;
-    setLoadingGenerate(true);
-    try {
-      let tags = await generateTags(parseInt(note_id));
-      tags = tags.filter(t => !noteTags.find(noteTag => noteTag.name == t))
-      setGeneratedTags(tags);
-    } catch (err) {
-      setError("Failed to generate tags.");
-    } finally {
-      setLoadingGenerate(false);
-    }
-  };
-
-  const handleAddRecommendedTag = async (tagName: string, source: "suggest" | "generate") => {
+  const handleAddRecommendedTag = async (tagName: string) => {
     if (!note_id) return;
     try {
       const newTag = await createTag(tagName);
       await addTagToNote(parseInt(note_id), newTag.tag_id);
       const tags = await getTagsForNote(parseInt(note_id));
       setNoteTags(tags);
-      if (source === "suggest") {
-        setSuggestedTags((prev) => prev.filter((t) => t !== tagName));
-      } else {
-        setGeneratedTags((prev) => prev.filter((t) => t !== tagName));
-      }
+      setSuggestedTags((prev) => prev.filter((t) => t !== tagName));
     } catch (err) {
       setError("Error adding recommended tag.");
     }
@@ -203,29 +183,13 @@ export function NotePage() {
             >
               {loadingSuggest ? "Loading..." : "Suggest Tags"}
             </button>
-            <button
-              onClick={handleGenerateTags}
-              disabled={loadingGenerate}
-              className={`px-3 py-1 rounded ${loadingGenerate ? 'bg-gray-400' : 'bg-purple-500'} text-white`}
-            >
-              {loadingGenerate ? "Loading..." : "Generate Tags"}
-            </button>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {suggestedTags.map((tagName, idx) => (
               <button
                 key={`suggest-${idx}`}
-                onClick={() => handleAddRecommendedTag(tagName, "suggest")}
+                onClick={() => handleAddRecommendedTag(tagName)}
                 className="px-2 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300 transition"
-              >
-                {tagName}
-              </button>
-            ))}
-            {generatedTags.map((tagName, idx) => (
-              <button
-                key={`generate-${idx}`}
-                onClick={() => handleAddRecommendedTag(tagName, "generate")}
-                className="px-2 py-1 bg-purple-200 text-purple-800 rounded hover:bg-purple-300 transition"
               >
                 {tagName}
               </button>

@@ -5,7 +5,7 @@ export async function getAllNotes(
   page: number,
   limit: number = 20,
   searchQuery?: string,
-  searchType?: "semantic" | "exact" | "ai"
+  searchType?: "semantic" | "exact"
 ): Promise<Notes> {
   const { data, response } = await GET("/notes", {
     params: {

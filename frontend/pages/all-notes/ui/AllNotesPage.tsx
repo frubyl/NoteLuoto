@@ -13,8 +13,8 @@ const SearchBar = memo(function SearchBar({
 }: {
   tempSearchQuery: string;
   setTempSearchQuery: (value: string) => void;
-  searchType: "semantic" | "exact" | "ai";
-  onSearchTypeChange: (type: "semantic" | "exact" | "ai") => void;
+  searchType: "semantic" | "exact";
+  onSearchTypeChange: (type: "semantic" | "exact") => void;
 }) {
   return (
     <div className="mb-6">
@@ -34,14 +34,6 @@ const SearchBar = memo(function SearchBar({
           onClick={() => onSearchTypeChange("exact")}
         >
           Exact Search
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            searchType === "ai" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => onSearchTypeChange("ai")}
-        >
-          AI Search
         </button>
       </div>
       <input
@@ -64,7 +56,7 @@ export function AllNotesPage() {
   const [error, setError] = useState<string>("");
   const [tempSearchQuery, setTempSearchQuery] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchType, setSearchType] = useState<"semantic" | "exact" | "ai">("semantic");
+  const [searchType, setSearchType] = useState<"semantic" | "exact">("semantic");
 
   const totalPages = Math.ceil(totalCount / limit);
 
@@ -98,7 +90,7 @@ export function AllNotesPage() {
     fetchNotes();
   }, [page, limit, searchQuery, searchType]);
 
-  const handleSearchTypeChange = (type: "semantic" | "exact" | "ai") => {
+  const handleSearchTypeChange = (type: "semantic" | "exact") => {
     setSearchType(type);
     setPage(1);
   };

@@ -41,9 +41,28 @@ paths:
         '201':
           description: Успешная регистрация нового пользователя
         '400':
-          description: Некорректные данные для регистрации
+          description: Некорректные данные для регистрации или неверный формат json
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid password 
         '409':
           description: Пользователь с таким именем уже существует
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
   /auth/login:
     post:
       summary: Аутентификация пользователя и получение JWT токена
@@ -92,9 +111,29 @@ paths:
                     type: string
                     example: your_jwt_token_here
         '401':
-          description: Неверные данные для аутентификации
+          description: Неверный пароль
         '404':
           description: Такого пользователя не существует
+        '400':
+          description: Неверный формат json
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid json
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
   /notes:
     post:
       summary: Создание новой заметки
@@ -120,6 +159,7 @@ paths:
                 type: object
                 properties:
                   note_id:
+                    minimum: 1
                     type: integer
                     example: 1
         '400':
@@ -129,27 +169,22 @@ paths:
               schema:
                 type: object
                 properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                          description: Имя поля, где произошла ошибка
-                        message:
-                          type: string
-                          description: Сообщение ошибки дял поля
-                example:
-                  errors:
-                    - field: body
-                      message: Must not be empty
-                    - field: title
-                      message: Max length (400) exceeded
-                    - field: tags
-                      message: Max length (32) exceeded
+                  message:
+                    type: string
+                    example: title max length (512) exceeded
+
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
     get:
       security:
         - JWT: []
@@ -168,7 +203,7 @@ paths:
           required: false
           schema:
             type: string
-            minLength: 0
+            minLength: 1
             maxLength: 500
             example: работа
           description: Ключевые слова для поиска.
@@ -177,7 +212,7 @@ paths:
           required: false
           schema:
             type: array
-            minItems: 0
+            minItems: 1
             maxItems: 32
             items:
               type: string
@@ -194,7 +229,6 @@ paths:
             enum:
               - semantic
               - exact
-              - ai
             example: semantic
           description: Тип поиска - семантический или точный.
         - in: query
@@ -222,29 +256,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Notes'
         '400':
-          description: Неверные параметры запроса
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                          description: Имя поля, где произошла ошибка
-                        message:
-                          type: string
-                          description: Сообщение об ошибке
-                example:
-                  errors:
-                    - field: limit
-                      message: Value must be from 5 to 20
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
   /notes/{note_id}:
     get:
       summary: Получение заметки по ID
@@ -273,6 +306,27 @@ paths:
           description: Недействительный или истёкший JWT-токен.
         '404':
           description: Заметка не найдена
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+
     patch:
       summary: Обновление заметки
       description: Обновляет информацию о заметке, включая чеклисты и вложения.
@@ -295,7 +349,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotePatchRequest'
+              $ref: '#/components/schemas/NoteCreateRequest'
       responses:
         '200':
           description: Заметка успешно обновлена
@@ -306,25 +360,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                          description: Имя поля, где произошла ошибка
-                        message:
-                          type: string
-                          description: Сообщение ошибки дял поля
-                example:
-                  errors:
-                    - field: body
-                      message: Must not be empty
-                    - field: title
-                      message: Max length (400) exceeded
-                    - field: tags
-                      message: Max length (32) exceeded
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+        
         '401':
           description: Недействительный или истёкший JWT-токен.
     delete:
@@ -350,6 +399,26 @@ paths:
           description: Недействительный или истёкший JWT-токен.
         '404':
           description: Заметка не найдена
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
           
   /checklist/{note_id}:
     post:
@@ -365,6 +434,7 @@ paths:
           required: true
           description: "ID заметки, к которой нужно добавить чеклист"
           schema:
+            minimum: 1
             type: integer
             example: 12
       requestBody:
@@ -397,6 +467,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Заметка с указанным ID не найдена"   
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
           
   /checklist/{checklist_id}/item:
     post:
@@ -405,7 +495,7 @@ paths:
       summary: "Добавить пункт в чеклист"
       operationId: addChecklistItem
       tags:
-        - Checklist
+        - Checklist Item
       parameters:
         - in: path
           name: checklist_id
@@ -413,6 +503,7 @@ paths:
           description: "ID чеклиста, к которому нужно добавить пункт"
           schema:
             type: integer
+            minimum: 1
             example: 12
       requestBody:
         required: true
@@ -442,6 +533,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Чеклист с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
           
   /checklist/item/{item_id}:
     patch:
@@ -450,7 +561,7 @@ paths:
       summary: "Изменить статус выполненности пункта чеклиста или его имя"
       operationId: updateChecklistItem
       tags:
-        - Checklist
+        - Checklist Item
       parameters:
         - in: path
           name: item_id
@@ -458,6 +569,7 @@ paths:
           description: "ID пункта чеклиста, статус которого нужно изменить"
           schema:
             type: integer
+            minimum: 1
             example: 5
       requestBody:
         description: Название нового тега
@@ -470,7 +582,7 @@ paths:
                 text:
                   type: string
                   minLength: 1
-                  maxLength: 50
+                  maxLength: 512
                   example: Buy something 
                 status:
                   type: boolean
@@ -482,6 +594,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Пункт чеклиста с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
           
     delete:
       security:
@@ -489,7 +621,7 @@ paths:
       summary: "Удалить пункт из чеклиста"
       operationId: deleteChecklistItem
       tags:
-        - Checklist
+        - Checklist Item
       parameters:
         - in: path
           name: item_id
@@ -497,6 +629,7 @@ paths:
           description: "ID пункта чеклиста, который нужно удалить"
           schema:
             type: integer
+            minimum: 1
             example: 5
       responses:
         '200':
@@ -505,6 +638,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Пункт чеклиста с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
           
   /checklist/{checklist_id}:
     patch: 
@@ -521,6 +674,7 @@ paths:
           description: "ID чеклиста, который нужно получить"
           schema:
             type: integer
+            minimum: 1
             example: 12
       requestBody:
         description: Название нового тега
@@ -533,7 +687,7 @@ paths:
                 title:
                   type: string
                   minLength: 1
-                  maxLength: 50
+                  maxLength: 256
                   example: Buy something 
    
                   
@@ -544,6 +698,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Пункт чеклиста с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
             
     get:
       security:
@@ -559,6 +733,7 @@ paths:
           description: "ID чеклиста, который нужно получить"
           schema:
             type: integer
+            minimum: 1
             example: 12
       responses:
         '200':
@@ -614,6 +789,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Чеклист с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
     delete:
       security:
         - JWT: [] 
@@ -628,6 +823,7 @@ paths:
           description: "ID чеклиста, который нужно удалить"
           schema:
             type: integer
+            minimum: 1
             example: 12
       responses:
         '200':
@@ -636,6 +832,26 @@ paths:
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Чеклист с указанным ID не найден"
+        '400':
+          description: Неверный запрос, отсутствуют необходимые поля или данные неверны.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: title max length (400) exceeded
+        '500': 
+          description: Ошибка на стороне сервера 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
       
   /attachment/{note_id}:
     post:
@@ -653,6 +869,7 @@ paths:
           description: "ID заметки, к которой нужно добавить вложение"
           schema:
             type: integer
+            minimum: 1
             example: 12
       requestBody:
         required: true
@@ -665,6 +882,7 @@ paths:
                   type: string
                   format: binary
                   description: "Файл, который нужно прикрепить к заметке"
+                  minLength: 1
                   maxLength: 524288000  # 500 MB
 
       responses:
@@ -680,14 +898,30 @@ paths:
                     description: "Айди файла"
                     example: 2
                     minimum: 1
-        '400':
-          description: "Файл отсутствует"
-        '413':
-          description: "Файл слишком большой"
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Filesystem error
         '401':
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
           description: "Заметка с указанным ID не найдена"
+        '400':
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid format
 
   /attachment/{attachment_id}:
     get:
@@ -703,6 +937,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
             example: 12
             
       responses:
@@ -713,16 +948,37 @@ paths:
               schema:
                 type: object
                 properties:
-                  file:
+                  file_name:
+                    type: string
+                  content:
                     type: string
                     format: binary
                     description: "Файл, который нужно прикрепить к заметке"
                     maxLength: 524288000  # 500 MB
-
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Filesystem error
         '401':
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
-          description: "Вложение не найдено"      
+          description: "Заметка с указанным ID не найдена"
+        '400':
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid format
     delete:
       security:
         - JWT: [] 
@@ -736,6 +992,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
             example: 12
             
       responses:
@@ -744,8 +1001,27 @@ paths:
         '401':
           description: "Неавторизованный запрос, требуется JWT токен"
         '404':
-          description: "Вложение не найдено"      
-          
+          description: "Вложение не найдено"    
+        '400':
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid format
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
   /tags/create:
     post:
       summary: Создание нового тега
@@ -781,12 +1057,30 @@ paths:
                   tag_id:
                     type: integer
                     example: 1
-        '400':
-          description: Неверный запрос
         '401':
           description: Недействительный или истёкший JWT-токен.
         '409':
           description: Такой тег уже существует
+        '400':
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
   /tags/all:
     get:
       summary: Получение всех тегов от самых часто используемых к менее используемым
@@ -820,6 +1114,16 @@ paths:
                 
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
           
   /tags/{note_id}:
     get:
@@ -861,11 +1165,29 @@ paths:
                       maxLength: 50
                       example: "work"
         '400':
-          description: Неверный запрос
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '401':
           description: Недействительный или истёкший JWT-токен.
         '404':
           description: Заметка с указанным ID не найдена
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
 
   /tags/{note_id}/{tag_id}:
     post:
@@ -882,24 +1204,44 @@ paths:
           description: ID заметки, к которой нужно добавить тег
           required: true
           schema:
+            minimum: 1
             type: integer
         - name: tag_id
           in: path
           description: ID тега, который нужно добавить
           required: true
           schema:
+            minimum: 1
             type: integer
       responses:
         '200':
           description: Тег успешно добавлен к заметке
         '400':
-          description: Неверный запрос
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '401':
           description: Недействительный или истёкший JWT-токен.
         '404':
           description: Заметка с указанным ID не найдена или тег не существует.
         '409':
           description: Такой тег уже добавлен к заметке
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
     delete:
       summary: Удаления тега из заметки
       description: Удаление тега из заметки по ID
@@ -914,22 +1256,42 @@ paths:
           description: ID заметки, у которой нужно удалить тег
           required: true
           schema:
+            minimum: 1
             type: integer
         - name: tag_id
           in: path
           description: ID тега, который нужно удалить
           required: true
           schema:
+            minimum: 1
             type: integer
       responses:
         '200':
           description: Тег успешно удален
         '400':
-          description: Неверный запрос
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '401':
           description: Недействительный или истёкший JWT-токен.
         '404':
           description: Заметка с указанным ID не найдена или тег не существует.
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
   /ai/answer:
     post:
       summary: Получение ответа от искусственного интеллекта
@@ -960,9 +1322,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  query_id:
-                    minimum: 1
-                    type: integer
                   answer:
                     minLength: 1
                     maxLength: 4096
@@ -971,9 +1330,27 @@ paths:
                       Рекомендуется использовать технику Pomodoro для улучшения
                       концентрации.
         '400':
-          description: Неверный запрос
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
   /history:
     get:
       summary: Получение истории запросов и ответов ИИ
@@ -1047,9 +1424,27 @@ paths:
                           example: '2025-01-02T12:34:56Z'
                           description: Дата и время запроса.
         '400':
-          description: Неверный запрос.
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
   /suggest/queries:
     get:
       summary: Получение предложений по поисковым запросам
@@ -1077,43 +1472,17 @@ paths:
                     - Советы по планированию задач
         '401':
           description: Недействительный или истёкший JWT-токен.
-  /ai/generate_tags/{note_id}:
-    post:
-      summary: Генерация тегов на основе данных замтеки
-      description: Автоматическая генерация тегов на основе текста заметки.
-      operationId: generateTags
-      tags:
-        - AI
-      security:
-        - JWT: []
-      parameters:
-        - in: path
-          name: note_id
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            example: 1
-      responses:
-        '200':
-          description: Список сгенерированных тегов
+        '500':
+          description: "Ошибка на стороне сервера"
           content:
             application/json:
               schema:
-                type: array
-                minItems: 1
-                maxItems: 5
-                items:
-                  type: string
-                  minLength: 1
-                  maxLength: 50
-                  example:
-                    - продуктивность
-                    - рабочее место
-        '401':
-          description: Недействительный или истёкший JWT-токен.
-        '404':
-          description: Заметка не найдена
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
+  
   /suggest/tags/{note_id}:
     post:
       summary: Рекомендации по тегам
@@ -1149,8 +1518,28 @@ paths:
                     - focus
         '401':
           description: Недействительный или истёкший JWT-токен.
+        '400':
+          description: Неверный формат 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Max tag lenght exeded
         '404':
           description: Заметка не найдена
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
 components:
   securitySchemes:
     JWT:
@@ -1166,12 +1555,12 @@ components:
           type: string
           minLength: 1
           maxLength: 512
-          example: Заголовок заметки
+          example: "Заголовок заметки"
         body:
           type: string
           minLength: 1
           maxLength: 20000
-          example: Описание заметки в формате Markdown
+          example: "Описание заметки в формате Markdown"
 
     NotePatchRequest:
       type: object
@@ -1180,21 +1569,21 @@ components:
           type: string
           minLength: 1
           maxLength: 512
-          example: Заголовок заметки
+          example: "Заголовок заметки"
         body:
           type: string
           minLength: 1
           maxLength: 20000
-          example: Описание заметки в формате Markdown
-
+          example: "Описание заметки в формате Markdown"
         created_at:
           type: string
           format: date-time
-          example: '2025-01-02T12:34:56'
+          example: "2025-01-02T12:34:56"
         updated_at:
           type: string
           format: date-time
-          example: '2025-01-02T12:34:56'                  
+          example: "2025-01-02T12:34:56"
+  
     NoteResponse:
       type: object
       required:
@@ -1212,33 +1601,39 @@ components:
           type: string
           minLength: 1
           maxLength: 512
-          example: Заголовок заметки
+          example: "Заголовок заметки"
         body:
           type: string
-          minLength: 1
+          minLength: 0
           maxLength: 20000
-          example: Описание заметки в формате Markdown
+          example: "Описание заметки в формате Markdown"
         created_at:
           type: string
           format: date-time
-          example: '2025-01-02T12:34:56'
+          example: "2025-01-02T12:34:56"
         updated_at:
           type: string
           format: date-time
-          example: '2025-01-02T12:34:56'
+          example: "2025-01-02T12:34:56"
+      
     Notes:
       required:
         - notes
         - total_count
       properties:
-          notes:
-            type: array
-            minItems: 0
-            maxItems: 100
-            items:
-              $ref: '#/components/schemas/NoteResponse'
-          total_count:
-            type: integer
-            minLength: 0
-            maxLength: 100
-            example: 2
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteResponse'
+        total_count:
+          type: integer
+          minimum: 0
+          example: 5
+          
+          
+          
+          
+          
+          
+          
+  

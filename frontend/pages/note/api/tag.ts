@@ -56,22 +56,6 @@ export async function removeTagFromNote(noteId: number, tagId: number): Promise<
   }
 }
 
-export async function generateTags(noteId: number): Promise<string[]> {
-  const { data, response } = await POST('/ai/generate_tags/{note_id}', {
-    params: {
-      path: {
-        note_id: noteId
-      }
-    }
-  })
-
-  if (response.status !== 200 || !data) {
-    throw new Error("Failed to generate tags")
-  }
-
-  return data
-}
-
 export async function suggestTags(noteId: number): Promise<string[]> {
   const { data, response } = await POST('/suggest/tags/{note_id}', {
     params: {
