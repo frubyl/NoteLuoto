@@ -80,7 +80,13 @@ export function AllNotesPage() {
     async function fetchNotes() {
       try {
         setLoading(true);
-        const data = await getAllNotes(page, limit, searchQuery, searchType);
+        const data = await (() => {
+          if (searchQuery.length > 0) {
+            return getAllNotes(page, limit, searchQuery, searchType);
+          } else {
+            return getAllNotes(page, limit);
+          }
+        })()
         setNotes(data.notes);
         setTotalCount(data.total_count);
       } catch (err) {
