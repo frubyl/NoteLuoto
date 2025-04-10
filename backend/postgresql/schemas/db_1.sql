@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS noteluoto.notes (
 CREATE TABLE IF NOT EXISTS noteluoto.tags (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
-  name VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(50) NOT NULL,
   CONSTRAINT fk_tags_user FOREIGN KEY (user_id) REFERENCES noteluoto.users (id)
 );
 

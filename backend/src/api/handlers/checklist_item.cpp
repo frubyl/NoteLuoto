@@ -3,6 +3,7 @@
 #include "checklist_item.hpp"
 #include <userver/storages/postgres/cluster.hpp>
 #include <userver/storages/postgres/component.hpp>
+#include <userver/utils/async.hpp>
 
 namespace nl::handlers::api::checklist::item {
 
@@ -43,11 +44,14 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         // Обновление 
         auto note_id = getNoteId(item.checklist_id_);
         std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
-        try {
-            client_.UpdateNote(note_id, noteToText); 
-        } catch(...) {
-            LOG_ERROR() << "Failed to send request to AI service";
-        }
+        userver::utils::Async("Send update note request to Ai-service",[noteToText = noteToText, note_id = note_id, &client = client_]() {
+            try {
+                client.UpdateNote(note_id, noteToText); 
+            } catch (std::exception& ex) {
+                LOG_ERROR() << ex.what();
+            }
+    
+        }).Detach();   
         const auto result_create =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kCreateChecklistItem.data(), item.checklist_id_, item.text_);
@@ -122,12 +126,14 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
         // Обновление 
         auto note_id = getNoteId(item.item_id_);
         std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
-        try {
-            client_.UpdateNote(note_id, noteToText); 
-        } catch(...) {
-            LOG_ERROR() << "Failed to send request to AI service";
-
-        }
+        userver::utils::Async("Send update note request to Ai-service",[noteToText = noteToText, note_id = note_id, &client = client_]() {
+            try {
+                client.UpdateNote(note_id, noteToText); 
+            } catch (std::exception& ex) {
+                LOG_ERROR() << ex.what();
+            }
+    
+        }).Detach();  
         request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
         return {};
 }    
@@ -181,12 +187,14 @@ userver::formats::json::Value Handler::HandleRequestJsonThrow(
           // Обновление 
           auto note_id = getNoteId(item.item_id_);
           std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
-          try {
-              client_.UpdateNote(note_id, noteToText); 
-          } catch(...) {
-            LOG_ERROR() << "Failed to send request to AI service";
-
-          }
+          userver::utils::Async("Send update note request to Ai-service",[noteToText = noteToText, note_id = note_id, &client = client_]() {
+            try {
+                client.UpdateNote(note_id, noteToText); 
+            } catch (std::exception& ex) {
+                LOG_ERROR() << ex.what();
+            }
+    
+        }).Detach();    
         const auto result =
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
                                 db::sql::kDeleteChecklistItem.data(), item.item_id_);

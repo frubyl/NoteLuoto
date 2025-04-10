@@ -14,7 +14,7 @@ async def test_delete_attachment_file_on_server_doesnt_exist(service_client, aut
 
 # для проверки надо создать файл del.txt в build_*/attachments/
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_delete_attachment_success(service_client, auth_header):
+async def test_delete_attachment_success(service_client, auth_header, create_del_txt):
     """Тест успешное удаление"""
     response = await service_client.delete('/attachment/20', headers = auth_header)
     assert response.status == 200

@@ -98,11 +98,15 @@ namespace nl::handlers::api::note {
             request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
 
             std::string noteToText = dataToTextFormatter_.FormatNote(noteRequest.note_id_);
+            userver::utils::Async("Send update note request to Ai-service",[noteToText = noteToText, note_id = noteRequest.note_id_, &client = client_]() {
+
             try {
-                client_.UpdateNote(noteRequest.note_id_, noteToText); 
-            } catch(...) {
-                LOG_ERROR() << "Failed to send request to AI service";
+                client.UpdateNote(note_id, noteToText); 
+            } catch(std::exception& ex) {
+                LOG_ERROR() << ex.what();
             }
+            }).Detach();
+
             return {};
         }      
 
@@ -166,12 +170,14 @@ namespace nl::handlers::api::note {
                 request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);  
 
                 std::string noteToText = dataToTextFormatter_.FormatNote(note_id);
+                userver::utils::Async("Send add note request to Ai-service",[noteToText = noteToText, note_id = note_id, &client = client_]() {
 
                 try {
-                    client_.AddNote(note_id, noteToText);
-                } catch (...) {
-                    LOG_ERROR() << "Failed to send request to AI service";
+                    client.AddNote(note_id, noteToText);
+                } catch(std::exception& ex) {
+                    LOG_ERROR() << ex.what();
                 }
+                }).Detach();
                 return response_body.ExtractValue();
         }   
         userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
@@ -258,11 +264,14 @@ namespace nl::handlers::api::note {
             userver::utils::Async("Delete user attachments", deleteAttachments, attachments).Detach();
             cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster, db::sql::kDeleteNote.data(), noteRequest.note_id_);
             request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
-            try {   
-                client_.DeleteNote(noteRequest.note_id_);
-            } catch(...){
-                LOG_ERROR() << "Failed to send request to AI service";
-            };
+            userver::utils::Async("Send delete note request to Ai-service",[note_id = noteRequest.note_id_, &client = client_]() {
+                try {   
+                    client.DeleteNote(note_id);
+                } catch(std::exception& ex) {
+                    LOG_ERROR() << ex.what();
+                }
+            }).Detach();
+
             return {};
         }   
         userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {

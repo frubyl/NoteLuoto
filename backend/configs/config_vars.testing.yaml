@@ -7,6 +7,5 @@ is-testing: true
 
 server-port: 8080
 
-grpc-endpoint: 'ai-service:8090'
-
+grpc-endpoint: "ai-service:8090"
 dbconnection: 'postgresql://testsuite@localhost:15433/noteluoto_db_1'

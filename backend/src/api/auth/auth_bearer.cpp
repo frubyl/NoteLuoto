@@ -67,17 +67,16 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
 }
 
 
-CheckerFactory::CheckerFactory(const userver::components::ComponentContext& context) : jwt_config_ (context.FindComponent<userver::components::Secdist>()
-.Get()
-.Get<utils::jwt::JWTConfig>()){
+userver::server::handlers::auth::AuthCheckerBasePtr CheckerFactory::operator()(
+  const userver::components::ComponentContext& context,
+  const userver::server::handlers::auth::HandlerAuthConfig& config,
+  const userver::server::handlers::auth::AuthCheckerSettings&) const {
+// Получение конфига jwt из конфигурационного файлй
+const auto jwt_config = context.FindComponent<userver::components::Secdist>()
+                            .Get()
+                            .Get<utils::jwt::JWTConfig>();
+return std::make_shared<AuthChecker>(std::move(jwt_config));
 
-}
-
-userver::server::handlers::auth::AuthCheckerBasePtr CheckerFactory::MakeAuthChecker(
-    const  userver::server::handlers::auth::HandlerAuthConfig& auth_config
-) const {
-   
-    return std::make_shared< AuthChecker>(jwt_config_);
 }
 
 }  // namespace nl::auth

@@ -43,7 +43,8 @@ components_manager:
 
 
         # grpc-client-logging:
-        # grpc-client-deadline-propagation:
+        grpc-client-deadline-propagation: 
+            enabled: true
         # grpc-client-middleware-testsuite:
 
         # grpc-client-middleware-testsuite:

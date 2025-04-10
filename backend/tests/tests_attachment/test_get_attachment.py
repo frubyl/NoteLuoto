@@ -15,7 +15,7 @@ async def test_get_attachment_with_missing_file(service_client, auth_header):
 
 # для проверки надо создать файл test.txt в build_*/attachments/
 @pytest.mark.pgsql('db_1', files=['initial_data.sql'])
-async def test_get_attachment_successfully(service_client, auth_header):
+async def test_get_attachment_successfully(service_client, auth_header, create_get_txt):
     """Тест проверяет успешное получение существующего вложения"""
     response = await service_client.get('/attachment/23', headers=auth_header)
     expected = {

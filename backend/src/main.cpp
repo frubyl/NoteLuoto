@@ -35,8 +35,9 @@
 #include <userver/ugrpc/client/component_list.hpp>
 int main(int argc, char* argv[]) {
   using namespace nl;
-  userver::server::handlers::auth::RegisterAuthCheckerFactory<handlers::auth::CheckerFactory>();
-  auto component_list =
+  userver::server::handlers::auth::RegisterAuthCheckerFactory(
+    "bearer", std::make_unique<handlers::auth::CheckerFactory>());
+      auto component_list =
       userver::components::MinimalServerComponentList()
           .Append<userver::server::handlers::Ping>()
           .Append<userver::components::TestsuiteSupport>()

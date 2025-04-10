@@ -17,7 +17,7 @@ services:
           - postgres
 
     noteluoto-container:
-        image: ghcr.io/userver-framework/ubuntu-22.04-userver-pg:latest
+        image: ghcr.io/userver-framework/ubuntu-22.04-userver-pg:v2.8
         privileged: true
         environment:
           <<: *db_env
@@ -55,4 +55,3 @@ networks:
                gateway: 2001:3984:3989::1
     ai-service:  
         driver: bridge
-        internal: true  # Закрытая сеть 
