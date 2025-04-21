@@ -51,7 +51,7 @@ namespace tags {
                 nl::grpc::clients::TagRecommenderClient& tagRecommenderClient_;
                 const userver::storages::postgres::ClusterPtr cluster_;
 
-                std::vector<std::string> getNoteTags(int64_t note_id) const;
+                std::vector<std::string> getAllTags(int64_t user_id) const;
                 userver::formats::json::Value buildResponsebody(std::vector<std::string>& suggestions) const;
                 userver::formats::json::Value buildErrorMessage(std::string message) const; 
 

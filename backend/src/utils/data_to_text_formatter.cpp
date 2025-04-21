@@ -24,9 +24,9 @@ namespace nl::utils {
 
         std::ostringstream ss;
 
-        ss << "updated_at: " << std::put_time(&tm, "%Y-%m-%dT%H:%M:%SZ") << '\n' 
-        << "title: " << note.title_ << '\n'
-        << "text: " << note.body_ << '\n';
+        ss << "updated_at:\t" << std::put_time(&tm, "%Y-%m-%dT%H:%M:%SZ") << '\n' 
+        << "title:\t" << note.title_ << '\n'
+        << "text:\t" << note.body_ << '\n';
 
         std::string formatChecklists = FormatChecklists(noteId);
         return ss.str() + formatChecklists;

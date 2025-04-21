@@ -72,7 +72,7 @@ def form_data(load_binary):
 @pytest.fixture
 def auth_header():
     """Фикстура для заголовков авторизации"""
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTc0NDMyMjUxNCwidXNlcl9pZCI6MX0.HHZjk3ugMevsUo0OkYZXN_mjzcfDIqtOLRzGnMeBOAc"
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9leHBfdGltZSI6MTc0NTU5MzA0MiwidXNlcl9pZCI6MX0.aG6PuSnCI0XfqqmhHrEb9ezwFAEVr52v3K4rzHSWjrw"
     return {"Authentication": f"Bearer {token}"}  
 
 @pytest.fixture(scope='session')

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "suggest.hpp"
 #include "../../db/sql.hpp"
+#include "../../models/tag.hpp"
 
 namespace nl::handlers::api::suggest {
 
@@ -63,13 +64,13 @@ namespace nl::handlers::api::suggest {
                     request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
                     return buildErrorMessage("Note_id in path is empty");
                  }
-                 auto note_id = std::stoi(request.GetPathArg("note_id"));
+                auto note_id = std::stoi(request.GetPathArg("note_id"));
                  if (note_id < 1) {
                     request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);  
                     return buildErrorMessage("Note_id less than 1");
                  }
-
-                auto existingTags = getNoteTags(note_id);
+                auto user_id = context.GetData<int32_t>("user_id");
+                auto existingTags = getAllTags(user_id);
 
                 auto suggestions = tagRecommenderClient_.RecommendTags(note_id, existingTags);
                 request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
@@ -79,14 +80,14 @@ namespace nl::handlers::api::suggest {
                 
             }
 
-            std::vector<std::string> Handler::getNoteTags(int64_t note_id) const {
+            std::vector<std::string> Handler::getAllTags(int64_t user_id) const {
                 const auto result = cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
-                                    db::sql::kGetNoteTagsWithoutId.data(), note_id);
+                                    db::sql::kGetAllTags.data(), user_id);
 
                 std::vector<std::string> existingTags;
                 for (auto& row : result) {
-                    std::string tag = row.As<std::string>();
-                    existingTags.push_back(tag);
+                    auto tag = row.As<models::Tag>(userver::storages::postgres::kRowTag);
+                    existingTags.push_back(tag.name_);
                 }   
 
                 return existingTags;
