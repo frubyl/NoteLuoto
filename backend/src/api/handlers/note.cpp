@@ -43,20 +43,53 @@ namespace nl::handlers::api::note {
                 return {};
             }
 
-            // Формируем тело ответа 
             auto note = result.AsSingleRow<models::NoteWithoutId>(userver::storages::postgres::kRowTag);
-
-            userver::formats::json::ValueBuilder response_body;
-            response_body = note;
+            auto checklistsId = getChecklistsId(noteRequest.note_id_);
+            auto attachmentsId = getAttachmentsId(noteRequest.note_id_);
             request.SetResponseStatus(userver::server::http::HttpStatus::kOk);  
-            return response_body.ExtractValue();
+            return buildResponseBody(note, checklistsId, attachmentsId);
         }  
         userver::formats::json::Value Handler::buildErrorMessage(std::string message) const {
             userver::formats::json::ValueBuilder response_body;
             response_body["message"] = message;
             return response_body.ExtractValue();
           }   
-    
+
+        std::vector<int32_t> Handler::getChecklistsId(int32_t note_id) const {
+            auto result =  cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                db::sql::kGetChecklistsId.data(), note_id);
+
+                std::vector<int32_t> checklistsId;
+                for (auto& row : result) {
+                    checklistsId.push_back(row["id"].As<int32_t>());
+                }
+                return checklistsId;
+        }
+        std::vector<int32_t> Handler::getAttachmentsId(int32_t note_id) const {
+            auto result =  cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlaveOrMaster,
+                db::sql::kGetAttachmentsId.data(), note_id);
+                std::vector<int32_t> attachmentsId;
+                for (auto& row : result) {
+                    attachmentsId.push_back(row["id"].As<int32_t>());
+                }
+                return attachmentsId;
+        }
+        
+        userver::formats::json::Value Handler::buildResponseBody(models::NoteWithoutId& note, std::vector<int32_t>& checklistsId, std::vector<int32_t>& attachmentsId) const {
+            userver::formats::json::ValueBuilder response_body;
+            response_body = note;
+            response_body["checklists_id"] = userver::formats::common::Type::kArray;  
+            for (auto id : checklistsId) {
+                response_body["checklists_id"].PushBack(id);
+            }
+
+            response_body["attachments_id"] = userver::formats::common::Type::kArray;  
+            for (auto id : attachmentsId) {
+                response_body["attachments_id"].PushBack(id);
+            }
+            return response_body.ExtractValue();
+        }
+
        
     } // namespace get
 
