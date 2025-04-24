@@ -31,7 +31,9 @@ class Handler final : public userver::server::handlers::HttpHandlerJsonBase {
  private:
   const userver::storages::postgres::ClusterPtr cluster_;
   userver::formats::json::Value buildErrorMessage(std::string message) const;
-
+  std::vector<int32_t> getChecklistsId(int32_t note_id) const;
+  std::vector<int32_t> getAttachmentsId(int32_t note_id) const;
+  userver::formats::json::Value buildResponseBody(models::NoteWithoutId&, std::vector<int32_t>& checklistsId, std::vector<int32_t>& attachmentsId) const;
 };
 } // namespace get
 
