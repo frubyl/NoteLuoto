@@ -986,7 +986,56 @@ paths:
                   message:
                     type: string
                     example: Invalid format
-
+  /attachment/of_note/{note_id}:
+    get:
+      summary: Получение вложений заметки
+      description: Возвращает список id всех вложений, связанных с указанной заметкой.
+      operationId: getAttachmentsForNote
+      tags:
+        - Attachment
+      security:
+        - JWT: []
+      parameters:
+        - name: note_id
+          in: path
+          description: ID заметки, для которой требуется получить вложения
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Список id вложений, связанных с заметкой
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - attachment_id
+                  properties:
+                    attachment_id:
+                      type: integer
+                      example: 1
+        '400':
+          description: Неверный формат 
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка с указанным ID не найдена
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
+  
  
   /attachment/{attachment_id}:
     get:
@@ -1012,6 +1061,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - file_name
+                  - content
                 properties:
                   file_name:
                     type: string

@@ -207,6 +207,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/attachment/of_note/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Получение вложений заметки
+         * @description Возвращает список id всех вложений, связанных с указанной заметкой.
+         */
+        get: operations["getAttachmentsForNote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/attachment/{attachment_id}": {
         parameters: {
             query?: never;
@@ -1528,6 +1548,65 @@ export interface operations {
             };
         };
     };
+    getAttachmentsForNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID заметки, для которой требуется получить вложения */
+                note_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список id вложений, связанных с заметкой */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        attachment_id: number;
+                    }[];
+                };
+            };
+            /** @description Неверный формат */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Недействительный или истёкший JWT-токен. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Заметка с указанным ID не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     getAttachmentFromNote: {
         parameters: {
             query?: never;
@@ -1546,12 +1625,12 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        file_name?: string;
+                        file_name: string;
                         /**
                          * Format: binary
                          * @description Файл, который нужно прикрепить к заметке
                          */
-                        content?: string;
+                        content: string;
                     };
                 };
             };

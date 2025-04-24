@@ -96,6 +96,17 @@ interface MockChecklist {
 
 const checklists: MockChecklist[] = [];
 
+let attachmentIdCounter = 1;
+
+interface MockAttachment {
+  attachment_id: number;
+  note_id: number;
+  file_name: string;
+  content: string;
+}
+
+const attachments: MockAttachment[] = [];
+
 export const handlers = [
   http.post<never, LoginRequest>('/auth/login', async ({ request }) => {
     const creds = await request.json()
@@ -340,4 +351,55 @@ export const handlers = [
     parent.updated_at = new Date().toISOString();
     return HttpResponse.text('', { status: 200 });
   }),
+
+    http.post<{ note_id: string }>('/attachment/:note_id', async ({ request, params }) => {
+      const noteId = Number(params.note_id);
+      const form = await request.formData();
+      const file = form.get('file') as File | null;
+      if (!file) {
+        return HttpResponse.json({ message: 'Invalid format' }, { status: 400 });
+      }
+  
+      const text = await file.text();
+  
+      const newAtt: MockAttachment = {
+        attachment_id: attachmentIdCounter++,
+        note_id: noteId,
+        file_name: file.name,
+        content: text,
+      };
+      attachments.push(newAtt);
+      return HttpResponse.json({ attachment_id: newAtt.attachment_id }, { status: 200 });
+    }),
+  
+    http.get<{ note_id: string }>('/attachment/of_note/:note_id', async ({ params }) => {
+      const noteId = Number(params.note_id);
+      const list = attachments
+        .filter(a => a.note_id === noteId)
+        .map(a => ({ attachment_id: a.attachment_id }));
+      return HttpResponse.json(list, { status: 200 });
+    }),
+  
+    http.get<{ attachment_id: string }>('/attachment/:attachment_id', async ({ params }) => {
+      const id = Number(params.attachment_id);
+      const att = attachments.find(a => a.attachment_id === id);
+      if (!att) {
+        return HttpResponse.text('', { status: 404 });
+      }
+      return HttpResponse.json({
+        file_name: att.file_name,
+        content: att.content,
+      }, { status: 200 });
+    }),
+  
+    http.delete<{ attachment_id: string }>('/attachment/:attachment_id', async ({ params }) => {
+      const id = Number(params.attachment_id);
+      const idx = attachments.findIndex(a => a.attachment_id === id);
+      if (idx === -1) {
+        return HttpResponse.text('', { status: 404 });
+      }
+      attachments.splice(idx, 1);
+      return HttpResponse.text('', { status: 200 });
+    }),
+  
 ]
