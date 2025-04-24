@@ -17,19 +17,12 @@ export interface Checklist {
 }
 
 export async function getChecklistsForNote(
-  noteId: number
+  checklists_id: number[]
 ): Promise<Checklist[]> {
-  const { data, response } = await GET("/checklist/of_note/{note_id}", {
-    params: { path: { note_id: noteId } },
-  });
-  if (response.status !== 200 || !data || !Array.isArray(data)) {
-    throw new Error("Failed to fetch checklists");
-  }
-  
   let checklists: Checklist[] = Array.of()
 
-  for (var c of data) {
-      checklists.push(await getChecklistById(c.checklist_id))
+  for (var id of checklists_id) {
+      checklists.push(await getChecklistById(id))
   }
 
   return checklists

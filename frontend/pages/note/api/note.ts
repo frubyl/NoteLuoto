@@ -1,7 +1,7 @@
 import { GET, PATCH, DELETE, POST } from "shared/api";
-import type { NoteCreateRequest, NotePatchRequest } from "shared/api";
+import type { NoteCreateRequest, NoteGetResponse, NotePatchRequest } from "shared/api";
 
-export async function getNote(noteId: number): Promise<NotePatchRequest> {
+export async function getNote(noteId: number): Promise<NoteGetResponse> {
   const { data, response } = await GET("/notes/{note_id}", { params: { path: { note_id: noteId } } });
 
   if (response.status !== 200 || data === undefined) {

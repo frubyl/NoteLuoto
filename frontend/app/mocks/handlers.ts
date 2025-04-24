@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import type { LoginRequest, LoginResponse, NoteResponse, Notes } from 'shared/api'
+import type { LoginRequest, LoginResponse, NoteGetResponse, NoteResponse, Notes } from 'shared/api'
 import { type NoteCreateResponse, type NoteCreateRequest, type NotePatchRequest, type RegisterRequest, type ChatAnswerRequest, type TagCreateRequest } from 'shared/api'
 import { type NotesRequest } from 'shared/api/models'
 
@@ -148,11 +148,13 @@ export const handlers = [
     },)
   }),
   http.get('/notes/1', async ({ request }) => {
-    return HttpResponse.json<NotePatchRequest>({
+    return HttpResponse.json<NoteGetResponse>({
       title: noteTitle,
       body: noteBody,
       created_at: "2025-03-14T10:28:47Z",
       updated_at: "2025-03-14T10:28:47Z",
+      checklists_id: checklists.map(c => c.checklist_id),
+      attachments_id: attachments.map(a => a.attachment_id)
     })
   }),
   http.patch<never, NotePatchRequest>('/notes/1', async ({ request }) => {
@@ -264,9 +266,6 @@ export const handlers = [
     checklists.push(newChecklist);
     return HttpResponse.json({ checklist_id: newChecklist.checklist_id }, { status: 200 });
   }),
-  http.get<{ note_id: string }, { title: string }>('/checklist/of_note/:note_id', async ({ request, params }) => {
-    return HttpResponse.json(checklists.map(c => ({ checklist_id: c.checklist_id })), { status: 200 });
-  }),
   http.get<{ checklist_id: string }>('/checklist/:checklist_id', async ({ params }) => {
     const id = Number(params.checklist_id);
     const c = checklists.find(x => x.checklist_id === id);
@@ -370,14 +369,6 @@ export const handlers = [
       };
       attachments.push(newAtt);
       return HttpResponse.json({ attachment_id: newAtt.attachment_id }, { status: 200 });
-    }),
-  
-    http.get<{ note_id: string }>('/attachment/of_note/:note_id', async ({ params }) => {
-      const noteId = Number(params.note_id);
-      const list = attachments
-        .filter(a => a.note_id === noteId)
-        .map(a => ({ attachment_id: a.attachment_id }));
-      return HttpResponse.json(list, { status: 200 });
     }),
   
     http.get<{ attachment_id: string }>('/attachment/:attachment_id', async ({ params }) => {

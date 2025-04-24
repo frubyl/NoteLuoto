@@ -30,6 +30,7 @@ export type NotePatchRequest = components['schemas']['NotePatchRequest']
 export type NoteCreateRequest = components['schemas']['NoteCreateRequest']
 export type Notes = components['schemas']['Notes']
 export type NoteResponse = components['schemas']['NoteResponse']
+export type NoteGetResponse = components['schemas']['NoteGetResponse']
 export type NotesRequest = operations['getNotesWithSearchAndPagination']['parameters']['query']
 export type NoteCreateResponse = operations['createNote']['responses']['201']['content']['application/json']
 

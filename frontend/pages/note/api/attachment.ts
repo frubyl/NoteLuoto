@@ -28,18 +28,6 @@ export async function addAttachmentToNote(
   return data.attachment_id;
 }
 
-export async function getAttachmentsForNote(
-  noteId: number
-): Promise<AttachmentReference[]> {
-  const { data, response } = await GET("/attachment/of_note/{note_id}", {
-    params: { path: { note_id: noteId } },
-  });
-  if (response.status !== 200 || !data) {
-    throw new Error("Failed to fetch attachments");
-  }
-  return data;
-}
-
 export async function getAttachmentFromNote(
   attachmentId: number
 ): Promise<AttachmentData> {

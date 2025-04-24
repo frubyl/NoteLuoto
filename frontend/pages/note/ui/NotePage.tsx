@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { getNote, updateNote, deleteNote } from "../api/note";
-import type { NotePatchRequest } from "shared/api";
+import type { NotePatchRequest, NoteGetResponse } from "shared/api";
 import { Sidebar } from 'widgets/sidebar';
 import { TagModal } from './TagModal';
 import Highlight from '@tiptap/extension-highlight';
@@ -33,7 +33,6 @@ import {
 } from '../api/checklist';
 import {
   addAttachmentToNote,
-  getAttachmentsForNote,
   getAttachmentFromNote,
   deleteAttachmentFromNote,
   type AttachmentReference,
@@ -46,7 +45,7 @@ export function NotePage() {
   const { note_id } = useParams<{ note_id: string }>();
   const navigate = useNavigate();
 
-  const [note, setNote] = useState<NotePatchRequest | null>(null);
+  const [note, setNote] = useState<NoteGetResponse | null>(null);
   const [formData, setFormData] = useState<NotePatchRequest>({ title: "", body: "" });
   const editor = useEditor({
     extensions: [StarterKit, Highlight, Typography, Image],
@@ -90,8 +89,8 @@ export function NotePage() {
         setFormData({ title: n.title, body: n.body });
         if (editor) editor.commands.setContent(marked(n.body ?? ''));
         setNoteTags(await getTagsForNote(parseInt(note_id)));
-        setChecklists(await getChecklistsForNote(parseInt(note_id)));
-        setAttachments(await getAttachmentsForNote(parseInt(note_id)));
+        setChecklists(await getChecklistsForNote(n.checklists_id));
+        setAttachments(n.attachments_id.map(id => ({attachment_id: id})));
       } catch {
         setError("Error fetching note.");
       } finally {
@@ -149,13 +148,14 @@ export function NotePage() {
 
   const refreshChecklists = async () => {
     if (!note_id) return;
-    setChecklists(await getChecklistsForNote(parseInt(note_id)));
+    if (note !== null) setChecklists(await getChecklistsForNote(note.checklists_id));
   };
 
   const handleCreateChecklist = async () => {
     if (!note_id || !newChecklistTitle.trim()) return;
-    await createChecklist(parseInt(note_id), newChecklistTitle.trim());
+    let id = await createChecklist(parseInt(note_id), newChecklistTitle.trim());
     setNewChecklistTitle('');
+    if (note) note.checklists_id.push(id)
     await refreshChecklists();
   };
 
@@ -197,12 +197,13 @@ export function NotePage() {
   };
 
   const refreshAttachments = async () => {
-    if (note_id) return setAttachments(await getAttachmentsForNote(parseInt(note_id)));
+    if (note) return setAttachments(note.attachments_id.map(id => ({attachment_id: id})));
   };
   const handleUpload = async () => {
     if (!note_id || !fileInputRef.current?.files?.[0]) return;
-    await addAttachmentToNote(parseInt(note_id), fileInputRef.current.files![0]);
+    let id = await addAttachmentToNote(parseInt(note_id), fileInputRef.current.files![0]);
     fileInputRef.current.value = "";
+    if (note) note.attachments_id.push(id)
     await refreshAttachments();
   };
   const handleDownload = async (attId: number) => {
@@ -221,6 +222,7 @@ export function NotePage() {
   };
   const handleDeleteAttachment = async (attId: number) => {
     await deleteAttachmentFromNote(attId);
+    if (note) note.attachments_id = note.attachments_id.filter(id => id !== attId)
     await refreshAttachments();
   };
 

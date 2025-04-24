@@ -301,7 +301,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotePatchRequest'
+                $ref: '#/components/schemas/NoteGetResponse'
         '401':
           description: Недействительный или истёкший JWT-токен.
         '404':
@@ -489,56 +489,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /checklist/of_note/{note_id}:
-    get:
-      summary: Получение чеклистов заметки
-      description: Возвращает список id всех чеклистов, связанных с указанной заметкой.
-      operationId: getChecklistsForNote
-      tags:
-        - Checklist
-      security:
-        - JWT: []
-      parameters:
-        - name: note_id
-          in: path
-          description: ID заметки, для которой требуется получить чеклисты
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            example: 1
-      responses:
-        '200':
-          description: Список id чеклистов, связанных с заметкой
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - checklist_id
-                  properties:
-                    checklist_id:
-                      type: integer
-                      example: 1
-        '400':
-          description: Неверный формат 
-        '401':
-          description: Недействительный или истёкший JWT-токен.
-        '404':
-          description: Заметка с указанным ID не найдена
-        '500':
-          description: "Ошибка на стороне сервера"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Internal server error 
-     
+
   /checklist/{checklist_id}/item:
     post:
       security:
@@ -986,56 +937,6 @@ paths:
                   message:
                     type: string
                     example: Invalid format
-  /attachment/of_note/{note_id}:
-    get:
-      summary: Получение вложений заметки
-      description: Возвращает список id всех вложений, связанных с указанной заметкой.
-      operationId: getAttachmentsForNote
-      tags:
-        - Attachment
-      security:
-        - JWT: []
-      parameters:
-        - name: note_id
-          in: path
-          description: ID заметки, для которой требуется получить вложения
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            example: 1
-      responses:
-        '200':
-          description: Список id вложений, связанных с заметкой
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - attachment_id
-                  properties:
-                    attachment_id:
-                      type: integer
-                      example: 1
-        '400':
-          description: Неверный формат 
-        '401':
-          description: Недействительный или истёкший JWT-токен.
-        '404':
-          description: Заметка с указанным ID не найдена
-        '500':
-          description: "Ошибка на стороне сервера"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Internal server error 
-  
  
   /attachment/{attachment_id}:
     get:
@@ -1678,6 +1579,48 @@ components:
           minLength: 1
           maxLength: 20000
           example: "Описание заметки в формате Markdown"
+    NoteGetResponse:
+      type: object
+      required:
+        - title
+        - body
+        - created_at
+        - updated_at
+        - checklists_id
+        - attachments_id
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 512
+          example: "Заголовок заметки"
+        body:
+          type: string
+          minLength: 1
+          maxLength: 20000
+          example: "Описание заметки в формате Markdown"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-02T12:34:56"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-02T12:34:56"
+        checklists_id:
+          type: array
+          items:
+            type: integer
+            example:
+              - 1
+              - 3
+        attachments_id:
+          type: array
+          items:
+            type: integer
+            example:
+              - 4
+              - 7
 
     NotePatchRequest:
       type: object

@@ -113,26 +113,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/checklist/of_note/{note_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Получение чеклистов заметки
-         * @description Возвращает список id всех чеклистов, связанных с указанной заметкой.
-         */
-        get: operations["getChecklistsForNote"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/checklist/{checklist_id}/item": {
         parameters: {
             query?: never;
@@ -201,26 +181,6 @@ export interface paths {
          * @description Загружает файл и добавляет его в указанную заметку. Ответ содержит URL для доступа к файлу.
          */
         post: operations["addAttachmentToNote"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attachment/of_note/{note_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Получение вложений заметки
-         * @description Возвращает список id всех вложений, связанных с указанной заметкой.
-         */
-        get: operations["getAttachmentsForNote"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -418,6 +378,24 @@ export interface components {
             title?: string;
             /** @example Описание заметки в формате Markdown */
             body?: string;
+        };
+        NoteGetResponse: {
+            /** @example Заголовок заметки */
+            title: string;
+            /** @example Описание заметки в формате Markdown */
+            body: string;
+            /**
+             * Format: date-time
+             * @example 2025-01-02T12:34:56
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2025-01-02T12:34:56
+             */
+            updated_at: string;
+            checklists_id: number[];
+            attachments_id: number[];
         };
         NotePatchRequest: {
             /** @example Заголовок заметки */
@@ -746,7 +724,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotePatchRequest"];
+                    "application/json": components["schemas"]["NoteGetResponse"];
                 };
             };
             /** @description Неверный запрос, отсутствуют необходимые поля или данные неверны. */
@@ -971,65 +949,6 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example Internal Server Error */
-                        message?: string;
-                    };
-                };
-            };
-        };
-    };
-    getChecklistsForNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID заметки, для которой требуется получить чеклисты */
-                note_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Список id чеклистов, связанных с заметкой */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example 1 */
-                        checklist_id: number;
-                    }[];
-                };
-            };
-            /** @description Неверный формат */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Недействительный или истёкший JWT-токен. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Заметка с указанным ID не найдена */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Ошибка на стороне сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example Internal server error */
                         message?: string;
                     };
                 };
@@ -1542,65 +1461,6 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example Filesystem error */
-                        message?: string;
-                    };
-                };
-            };
-        };
-    };
-    getAttachmentsForNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID заметки, для которой требуется получить вложения */
-                note_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Список id вложений, связанных с заметкой */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example 1 */
-                        attachment_id: number;
-                    }[];
-                };
-            };
-            /** @description Неверный формат */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Недействительный или истёкший JWT-токен. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Заметка с указанным ID не найдена */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Ошибка на стороне сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example Internal server error */
                         message?: string;
                     };
                 };
