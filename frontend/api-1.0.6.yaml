@@ -457,6 +457,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - checklist_id
                 properties:
                   checklist_id:
                     type: integer
@@ -487,7 +489,56 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-          
+  /checklist/of_note/{note_id}:
+    get:
+      summary: Получение чеклистов заметки
+      description: Возвращает список id всех чеклистов, связанных с указанной заметкой.
+      operationId: getChecklistsForNote
+      tags:
+        - Checklist
+      security:
+        - JWT: []
+      parameters:
+        - name: note_id
+          in: path
+          description: ID заметки, для которой требуется получить чеклисты
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Список id чеклистов, связанных с заметкой
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - checklist_id
+                  properties:
+                    checklist_id:
+                      type: integer
+                      example: 1
+        '400':
+          description: Неверный формат 
+        '401':
+          description: Недействительный или истёкший JWT-токен.
+        '404':
+          description: Заметка с указанным ID не найдена
+        '500':
+          description: "Ошибка на стороне сервера"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
+     
   /checklist/{checklist_id}/item:
     post:
       security:
@@ -524,6 +575,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - item_id
                 properties:
                   item_id:
                     type: integer
@@ -664,7 +717,7 @@ paths:
       security:
         - JWT: []  # Для авторизации через JWT
       summary: "Обновить заголовок чеклиста"
-      operationId: getChecklistById
+      operationId: patchChecklistById
       tags:
         - Checklist
       parameters:
@@ -742,6 +795,11 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - title
+                  - created_at
+                  - updated_at
+                  - items
                 properties:
        
                   title:
@@ -762,6 +820,12 @@ paths:
                     type: array
                     items:
                       type: object
+                      required:
+                        - item_id
+                        - text
+                        - completed
+                        - created_at
+                        - updated_at
                       properties:
                         item_id:
                           type: integer
@@ -923,6 +987,7 @@ paths:
                     type: string
                     example: Invalid format
 
+ 
   /attachment/{attachment_id}:
     get:
       security:

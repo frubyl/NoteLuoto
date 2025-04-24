@@ -113,6 +113,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/checklist/of_note/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Получение чеклистов заметки
+         * @description Возвращает список id всех чеклистов, связанных с указанной заметкой.
+         */
+        get: operations["getChecklistsForNote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/checklist/{checklist_id}/item": {
         parameters: {
             query?: never;
@@ -164,7 +184,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Обновить заголовок чеклиста */
-        patch: operations["getChecklistById"];
+        patch: operations["patchChecklistById"];
         trace?: never;
     };
     "/attachment/{note_id}": {
@@ -893,7 +913,7 @@ export interface operations {
                          * @description Айди созданого чеклиста
                          * @example 2
                          */
-                        checklist_id?: number;
+                        checklist_id: number;
                     };
                 };
             };
@@ -937,6 +957,65 @@ export interface operations {
             };
         };
     };
+    getChecklistsForNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID заметки, для которой требуется получить чеклисты */
+                note_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список id чеклистов, связанных с заметкой */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        checklist_id: number;
+                    }[];
+                };
+            };
+            /** @description Неверный формат */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Недействительный или истёкший JWT-токен. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Заметка с указанным ID не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ошибка на стороне сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Internal server error */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     addChecklistItem: {
         parameters: {
             query?: never;
@@ -967,7 +1046,7 @@ export interface operations {
                          * @description ID созданного пункта
                          * @example 5
                          */
-                        item_id?: number;
+                        item_id: number;
                     };
                 };
             };
@@ -1161,47 +1240,47 @@ export interface operations {
                          * @description Заголовок чеклиста
                          * @example Shopping List
                          */
-                        title?: string;
+                        title: string;
                         /**
                          * Format: date-time
                          * @description Дата создания чеклиста
                          * @example 2025-03-10T09:30:00+00:00
                          */
-                        created_at?: string;
+                        created_at: string;
                         /**
                          * Format: date-time
                          * @description Дата последнего обновления чеклиста
                          * @example 2025-03-10T10:30:00+00:00
                          */
-                        updated_at?: string;
-                        items?: {
+                        updated_at: string;
+                        items: {
                             /**
                              * @description ID пункта чеклиста
                              * @example 1
                              */
-                            item_id?: number;
+                            item_id: number;
                             /**
                              * @description Текст пункта
                              * @example Buy apples
                              */
-                            text?: string;
+                            text: string;
                             /**
                              * @description Статус выполнения
                              * @example false
                              */
-                            completed?: boolean;
+                            completed: boolean;
                             /**
                              * Format: date-time
                              * @description Дата создания пункта
                              * @example 2025-03-10T09:30:00+00:00
                              */
-                            created_at?: string;
+                            created_at: string;
                             /**
                              * Format: date-time
                              * @description Дата последнего обновления пункта
                              * @example 2025-03-10T10:30:00+00:00
                              */
-                            updated_at?: string;
+                            updated_at: string;
                         }[];
                     };
                 };
@@ -1305,7 +1384,7 @@ export interface operations {
             };
         };
     };
-    getChecklistById: {
+    patchChecklistById: {
         parameters: {
             query?: never;
             header?: never;

@@ -76,6 +76,26 @@ const chatHistory: Array<{
     }
   ]
 
+let checklistIdCounter = 1;
+let itemIdCounter = 1;
+
+interface MockChecklist {
+  checklist_id: number;
+  note_id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  items: Array<{
+    item_id: number;
+    text: string;
+    completed: boolean;
+    created_at: string;
+    updated_at: string;
+  }>;
+}
+
+const checklists: MockChecklist[] = [];
+
 export const handlers = [
   http.post<never, LoginRequest>('/auth/login', async ({ request }) => {
     const creds = await request.json()
@@ -212,5 +232,112 @@ export const handlers = [
   }),
   http.post('/suggest/tags/:note_id', async () => {
     return HttpResponse.json(["urgent", "test"], { status: 200 })
-  })
+  }),
+  http.post<{ note_id: string }, { title: string }>('/checklist/:note_id', async ({ request, params }) => {
+    const noteId = Number(params.note_id);
+    const { title } = await request.json();
+
+    if (!title || title.length < 1 || title.length > 256) {
+      return HttpResponse.json({ message: 'Invalid title length' }, { status: 400 });
+    }
+
+    const now = new Date().toISOString();
+    const newChecklist: MockChecklist = {
+      checklist_id: checklistIdCounter++,
+      note_id: noteId,
+      title,
+      created_at: now,
+      updated_at: now,
+      items: [],
+    };
+    checklists.push(newChecklist);
+    return HttpResponse.json({ checklist_id: newChecklist.checklist_id }, { status: 200 });
+  }),
+  http.get<{ note_id: string }, { title: string }>('/checklist/of_note/:note_id', async ({ request, params }) => {
+    return HttpResponse.json(checklists.map(c => ({ checklist_id: c.checklist_id })), { status: 200 });
+  }),
+  http.get<{ checklist_id: string }>('/checklist/:checklist_id', async ({ params }) => {
+    const id = Number(params.checklist_id);
+    const c = checklists.find(x => x.checklist_id === id);
+    if (!c) return HttpResponse.text('', { status: 404 });
+    const { title, created_at, updated_at, items } = c;
+    return HttpResponse.json({ title, created_at, updated_at, items }, { status: 200 });
+  }),
+
+  http.patch<{ checklist_id: string }, { title: string }>('/checklist/:checklist_id', async ({ request, params }) => {
+    const id = Number(params.checklist_id);
+    const { title } = await request.json();
+    if (!title || title.length < 1 || title.length > 256) {
+      return HttpResponse.json({ message: 'Invalid title length' }, { status: 400 });
+    }
+    const c = checklists.find(x => x.checklist_id === id);
+    if (!c) return HttpResponse.text('', { status: 404 });
+    c.title = title;
+    c.updated_at = new Date().toISOString();
+    return HttpResponse.text('', { status: 200 });
+  }),
+
+  http.delete<{ checklist_id: string }>('/checklist/:checklist_id', async ({ params }) => {
+    const id = Number(params.checklist_id);
+    const idx = checklists.findIndex(x => x.checklist_id === id);
+    if (idx === -1) return HttpResponse.text('', { status: 404 });
+    checklists.splice(idx, 1);
+    return HttpResponse.text('', { status: 200 });
+  }),
+
+  http.post<{ checklist_id: string }, { text: string }>('/checklist/:checklist_id/item', async ({ request, params }) => {
+    const checklistId = Number(params.checklist_id);
+    const { text } = await request.json();
+    if (!text || text.length < 1 || text.length > 512) {
+      return HttpResponse.json({ message: 'Invalid text length' }, { status: 400 });
+    }
+    const c = checklists.find(x => x.checklist_id === checklistId);
+    if (!c) return HttpResponse.text('', { status: 404 });
+
+    const now = new Date().toISOString();
+    const newItem = {
+      item_id: itemIdCounter++,
+      text,
+      completed: false,
+      created_at: now,
+      updated_at: now,
+    };
+    c.items.push(newItem);
+    c.updated_at = now;
+    return HttpResponse.json({ item_id: newItem.item_id }, { status: 200 });
+  }),
+
+  http.patch<{ item_id: string }, { text?: string; status?: boolean }>(
+    '/checklist/item/:item_id',
+    async ({ request, params }) => {
+      const itemId = Number(params.item_id);
+      const patch = await request.json();
+      const allItems = checklists.flatMap(c => c.items);
+      const it = allItems.find(i => i.item_id === itemId);
+      if (!it) return HttpResponse.text('', { status: 404 });
+
+      if (patch.text !== undefined) {
+        if (patch.text.length < 1 || patch.text.length > 512) {
+          return HttpResponse.json({ message: 'Invalid text length' }, { status: 400 });
+        }
+        it.text = patch.text;
+      }
+      if (patch.status !== undefined) {
+        it.completed = patch.status;
+      }
+      it.updated_at = new Date().toISOString();
+      const parent = checklists.find(c => c.items.some(x => x.item_id === itemId))!;
+      parent.updated_at = it.updated_at;
+      return HttpResponse.text('', { status: 200 });
+    }
+  ),
+
+  http.delete<{ item_id: string }>('/checklist/item/:item_id', async ({ params }) => {
+    const itemId = Number(params.item_id);
+    const parent = checklists.find(c => c.items.some(i => i.item_id === itemId));
+    if (!parent) return HttpResponse.text('', { status: 404 });
+    parent.items = parent.items.filter(i => i.item_id !== itemId);
+    parent.updated_at = new Date().toISOString();
+    return HttpResponse.text('', { status: 200 });
+  }),
 ]
