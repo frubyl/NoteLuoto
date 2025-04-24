@@ -19,6 +19,8 @@ async def test_get_existing_note(service_client, auth_header):
     assert response.json()["title"] == "title"
     assert response.json()["body"] == "body"
     assert response.json()["created_at"] == "2025-03-10T09:30:00+00:00"
+    assert response.json()["checklists_id"] == [1, 99]
+    assert response.json()["attachments_id"] == [22, 20, 23]
 
 
 async def test_get_invalid_token(service_client):
