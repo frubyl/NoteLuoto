@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tag_recommender;
+
+service TagRecommender {
+  rpc RecommendTags (TagRecommendationRequest) returns (RecommendedTags);
+}
+
+message TagRecommendationRequest {
+  int64 note_id = 1;
+  repeated string existing_tags = 2;
+}
+
+message RecommendedTags {
+  repeated string recommended_tags = 1;
+}
+
+

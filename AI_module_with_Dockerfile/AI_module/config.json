@@ -1,0 +1,14 @@
+{
+    "chat_model": "ollama:llama3.2:3b",
+    "embeddings_model": "ollama:snowflake-arctic-embed2:latest",
+    "chat_model_api_key": {
+        "key_name": null,
+        "key": null
+    },
+    "embeddings_model_api_key": {
+        "key_name": null,
+        "key": null
+    },
+    "n_relevant_notes": 2,
+    "n_prompt_recommendations": 2
+}
