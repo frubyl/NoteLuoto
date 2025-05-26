@@ -38,6 +38,8 @@ import {
   type AttachmentReference,
   type AttachmentData,
 } from "../api/attachment";
+import { MDXEditor } from '@mdxeditor/editor'
+import '@mdxeditor/editor/style.css'
 
 const turndownService = new TurndownService({ headingStyle: 'atx' });
 
