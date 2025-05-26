@@ -6,7 +6,35 @@ import { type NotesRequest } from 'shared/api/models'
 let notes: NoteResponse[] = [{
   note_id: 1,
   title: "note1",
-  body: "abcd",
+  body: `# Заголовок 1 уровня
+
+  ## Заголовок 2 уровня
+  
+  просто текст просто текст просто текст
+  текст
+  
+  **Жирный текст**, *курсив*, ~~зачёркнутый~~
+  
+  > Цитата: "abcd"
+  
+  1. Пункт списка
+  2. Пункт списка  
+  - Вложенный список  
+  - Пункт 2
+  
+  [ссылка на гугл](https://google.com)
+  
+  \`\`\`js
+  // hello world
+  function greet(name) {
+     console.log(\`Hello \${name}\`);
+  }
+  \`\`\`
+  
+  - [ ] checkbox 1
+  
+  - [x] checkbox 2
+  `,
   created_at: "2025-03-14T10:28:47Z",
   updated_at: "2025-03-14T10:28:47Z",
 },
@@ -36,7 +64,35 @@ for (let i = 4; i < 100; i++) {
 }
 
 let noteTitle = "note1"
-let noteBody = "body"
+let noteBody = `# Заголовок 1 уровня
+
+## Заголовок 2 уровня
+
+просто текст просто текст просто текст
+текст
+
+**Жирный текст**, *курсив*, ~~зачёркнутый~~
+
+> Цитата: "abcd"
+
+1. Пункт списка
+2. Пункт списка  
+- Вложенный список  
+- Пункт 2
+
+[ссылка на гугл](https://google.com)
+
+\`\`\`js
+// hello world
+function greet(name) {
+   console.log(\`Hello \${name}\`);
+}
+\`\`\`
+
+- [ ] checkbox 1
+
+- [x] checkbox 2
+`
 
 let noteTags = [
   { tag_id: 1, name: "work" },
